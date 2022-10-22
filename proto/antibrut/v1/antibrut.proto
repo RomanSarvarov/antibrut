@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package antibrut.v1;
+
+option go_package = "./;antibrut";
+
+service AntiBrutService {
+  rpc Try(TryRequest) returns (TryResponse);
+  rpc Reset(ResetRequest) returns (google.protobuf.Empty);
+
+  rpc AddToWhiteList(AddToWhiteListRequest) returns (google.protobuf.Empty);
+  rpc DeleteFromWhiteList(DeleteFromWhiteListRequest) returns (google.protobuf.Empty);
+
+  rpc AddToBlackList(AddToBlackListRequest) returns (google.protobuf.Empty);
+  rpc DeleteFromBlackList(DeleteFromBlackListRequest) returns (google.protobuf.Empty);
+}
+
+message Attempt {
+  string type = 1;
+  string value = 2;
+}
+
+message TryRequest {
+  Attempt attempt = 1;
+}
+
+message TryResponse {
+  bool ok = 1;
+}
+
+message ResetRequest {
+  Attempt attempt = 1;
+}
+
+message AddToWhiteListRequest {
+  Attempt attempt = 1;
+}
+
+message DeleteFromWhiteListRequest {
+  Attempt attempt = 1;
+}
+
+message AddToBlackListRequest {
+  Attempt attempt = 1;
+}
+
+message DeleteFromBlackListRequest {
+  Attempt attempt = 1;
+}
