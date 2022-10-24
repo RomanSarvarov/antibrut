@@ -1,13 +1,13 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE limits
+CREATE TABLE limitations
 (
     code     TEXT PRIMARY KEY,
-    attempts INTEGER NOT NULL,
-    per_sec  INTEGER NOT NULL
+    max_attempts INTEGER NOT NULL,
+    interval_sec  INTEGER NOT NULL
 );
 
-INSERT INTO limits (code, attempts, per_sec)
+INSERT INTO limitations (code, max_attempts, interval_sec)
 VALUES ('login', 10, 60),
        ('password', 100, 60),
        ('ip', 1000, 60)
@@ -16,5 +16,5 @@ VALUES ('login', 10, 60),
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE limits;
+DROP TABLE limitations;
 -- +goose StatementEnd

@@ -2,20 +2,19 @@ package main
 
 import (
 	"context"
-	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
 
-	"antibrut/config"
-	"antibrut/leakybucket"
-	"antibrut/proto/antibrut/v1"
-	"antibrut/sqlite"
+	"github.com/romsar/antibrut"
+	"github.com/romsar/antibrut/config"
+	"github.com/romsar/antibrut/leakybucket"
+	"github.com/romsar/antibrut/sqlite"
+
+	localgrpc "github.com/romsar/antibrut/grpc"
 )
 
 var runCmd = &cobra.Command{
@@ -61,42 +60,24 @@ func serve(cmd *cobra.Command, args []string) error {
 	if runMs {
 		cmd.Println("Running database migrations...")
 
-		if err = db.Migrate(cfg.SQLite.MigrationsPath); err != nil {
+		if err := db.Migrate(); err != nil {
 			return err
 		}
 	}
 
 	// rate limiter
-	limiter := leakybucket.New(db)
-	_ = limiter
+	rateLimiter := leakybucket.New(db)
+
+	// service
+	service := antibrut.NewService(db, rateLimiter)
 
 	// grpc server
-	lis, err := net.Listen("tcp", cfg.GRPC.Address)
-	if err != nil {
-		return errors.Wrap(err, "start grpc server error")
-	}
+	server := localgrpc.NewServer(service)
 
-	srv := grpc.NewServer()
+	errGrp.Go(func() error {
+		cmd.Printf("Starting server on `%s`\n", cfg.GRPC.Address)
 
-	antibrut.RegisterAntiBrutServiceServer(srv, grpcapi.New(model))
-
-	closer.Add(func() error {
-		log.
-			Debug().
-			Msgf("terminating GRPC server")
-
-		srv.GracefulStop()
-
-		return nil
-	})
-
-	errgrp.Go(func() error {
-		log.
-			Debug().
-			Msgf("starting GRPC server on: `%s`", cfg.GRPC.Address)
-
-		err := srv.Serve(lis)
-		if err != nil && !errors.Is(err, grpc.ErrServerStopped) {
+		if err := server.Start(cfg.GRPC.Address); err != nil {
 			return err
 		}
 		return nil
@@ -106,7 +87,11 @@ func serve(cmd *cobra.Command, args []string) error {
 
 	cmd.Println("Stopping...")
 
-	if err = errGrp.Wait(); err != nil {
+	if err := server.Close(); err != nil {
+		cmd.PrintErrln(err)
+	}
+
+	if err := errGrp.Wait(); err != nil {
 		return err
 	}
 

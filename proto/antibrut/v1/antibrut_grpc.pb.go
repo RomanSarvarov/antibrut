@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: antibrut/v1/antibrut.proto
 
-package antibrut
+package proto
 
 import (
 	context "context"
@@ -23,12 +23,12 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AntiBrutServiceClient interface {
-	Try(ctx context.Context, in *TryRequest, opts ...grpc.CallOption) (*TryResponse, error)
+	Check(ctx context.Context, in *CheckRequest, opts ...grpc.CallOption) (*CheckResponse, error)
 	Reset(ctx context.Context, in *ResetRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	AddToWhiteList(ctx context.Context, in *AddToWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteFromWhiteList(ctx context.Context, in *DeleteFromWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	AddToBlackList(ctx context.Context, in *AddToBlackListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteFromBlackList(ctx context.Context, in *DeleteFromBlackListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	AddIPToWhiteList(ctx context.Context, in *AddIPToWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteIPFromWhiteList(ctx context.Context, in *DeleteIPFromWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	AddIPToBlackList(ctx context.Context, in *AddIPToBlackListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteIPFromBlackList(ctx context.Context, in *DeleteIPFromBlackListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type antiBrutServiceClient struct {
@@ -39,9 +39,9 @@ func NewAntiBrutServiceClient(cc grpc.ClientConnInterface) AntiBrutServiceClient
 	return &antiBrutServiceClient{cc}
 }
 
-func (c *antiBrutServiceClient) Try(ctx context.Context, in *TryRequest, opts ...grpc.CallOption) (*TryResponse, error) {
-	out := new(TryResponse)
-	err := c.cc.Invoke(ctx, "/antibrut.v1.AntiBrutService/Try", in, out, opts...)
+func (c *antiBrutServiceClient) Check(ctx context.Context, in *CheckRequest, opts ...grpc.CallOption) (*CheckResponse, error) {
+	out := new(CheckResponse)
+	err := c.cc.Invoke(ctx, "/antibrut.v1.AntiBrutService/Check", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -57,36 +57,36 @@ func (c *antiBrutServiceClient) Reset(ctx context.Context, in *ResetRequest, opt
 	return out, nil
 }
 
-func (c *antiBrutServiceClient) AddToWhiteList(ctx context.Context, in *AddToWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *antiBrutServiceClient) AddIPToWhiteList(ctx context.Context, in *AddIPToWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/antibrut.v1.AntiBrutService/AddToWhiteList", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/antibrut.v1.AntiBrutService/AddIPToWhiteList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *antiBrutServiceClient) DeleteFromWhiteList(ctx context.Context, in *DeleteFromWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *antiBrutServiceClient) DeleteIPFromWhiteList(ctx context.Context, in *DeleteIPFromWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/antibrut.v1.AntiBrutService/DeleteFromWhiteList", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/antibrut.v1.AntiBrutService/DeleteIPFromWhiteList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *antiBrutServiceClient) AddToBlackList(ctx context.Context, in *AddToBlackListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *antiBrutServiceClient) AddIPToBlackList(ctx context.Context, in *AddIPToBlackListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/antibrut.v1.AntiBrutService/AddToBlackList", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/antibrut.v1.AntiBrutService/AddIPToBlackList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *antiBrutServiceClient) DeleteFromBlackList(ctx context.Context, in *DeleteFromBlackListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *antiBrutServiceClient) DeleteIPFromBlackList(ctx context.Context, in *DeleteIPFromBlackListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/antibrut.v1.AntiBrutService/DeleteFromBlackList", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/antibrut.v1.AntiBrutService/DeleteIPFromBlackList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -97,12 +97,12 @@ func (c *antiBrutServiceClient) DeleteFromBlackList(ctx context.Context, in *Del
 // All implementations must embed UnimplementedAntiBrutServiceServer
 // for forward compatibility
 type AntiBrutServiceServer interface {
-	Try(context.Context, *TryRequest) (*TryResponse, error)
+	Check(context.Context, *CheckRequest) (*CheckResponse, error)
 	Reset(context.Context, *ResetRequest) (*emptypb.Empty, error)
-	AddToWhiteList(context.Context, *AddToWhiteListRequest) (*emptypb.Empty, error)
-	DeleteFromWhiteList(context.Context, *DeleteFromWhiteListRequest) (*emptypb.Empty, error)
-	AddToBlackList(context.Context, *AddToBlackListRequest) (*emptypb.Empty, error)
-	DeleteFromBlackList(context.Context, *DeleteFromBlackListRequest) (*emptypb.Empty, error)
+	AddIPToWhiteList(context.Context, *AddIPToWhiteListRequest) (*emptypb.Empty, error)
+	DeleteIPFromWhiteList(context.Context, *DeleteIPFromWhiteListRequest) (*emptypb.Empty, error)
+	AddIPToBlackList(context.Context, *AddIPToBlackListRequest) (*emptypb.Empty, error)
+	DeleteIPFromBlackList(context.Context, *DeleteIPFromBlackListRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedAntiBrutServiceServer()
 }
 
@@ -110,23 +110,23 @@ type AntiBrutServiceServer interface {
 type UnimplementedAntiBrutServiceServer struct {
 }
 
-func (UnimplementedAntiBrutServiceServer) Try(context.Context, *TryRequest) (*TryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Try not implemented")
+func (UnimplementedAntiBrutServiceServer) Check(context.Context, *CheckRequest) (*CheckResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Check not implemented")
 }
 func (UnimplementedAntiBrutServiceServer) Reset(context.Context, *ResetRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Reset not implemented")
 }
-func (UnimplementedAntiBrutServiceServer) AddToWhiteList(context.Context, *AddToWhiteListRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddToWhiteList not implemented")
+func (UnimplementedAntiBrutServiceServer) AddIPToWhiteList(context.Context, *AddIPToWhiteListRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddIPToWhiteList not implemented")
 }
-func (UnimplementedAntiBrutServiceServer) DeleteFromWhiteList(context.Context, *DeleteFromWhiteListRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteFromWhiteList not implemented")
+func (UnimplementedAntiBrutServiceServer) DeleteIPFromWhiteList(context.Context, *DeleteIPFromWhiteListRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteIPFromWhiteList not implemented")
 }
-func (UnimplementedAntiBrutServiceServer) AddToBlackList(context.Context, *AddToBlackListRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddToBlackList not implemented")
+func (UnimplementedAntiBrutServiceServer) AddIPToBlackList(context.Context, *AddIPToBlackListRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddIPToBlackList not implemented")
 }
-func (UnimplementedAntiBrutServiceServer) DeleteFromBlackList(context.Context, *DeleteFromBlackListRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteFromBlackList not implemented")
+func (UnimplementedAntiBrutServiceServer) DeleteIPFromBlackList(context.Context, *DeleteIPFromBlackListRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteIPFromBlackList not implemented")
 }
 func (UnimplementedAntiBrutServiceServer) mustEmbedUnimplementedAntiBrutServiceServer() {}
 
@@ -141,20 +141,20 @@ func RegisterAntiBrutServiceServer(s grpc.ServiceRegistrar, srv AntiBrutServiceS
 	s.RegisterService(&AntiBrutService_ServiceDesc, srv)
 }
 
-func _AntiBrutService_Try_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TryRequest)
+func _AntiBrutService_Check_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AntiBrutServiceServer).Try(ctx, in)
+		return srv.(AntiBrutServiceServer).Check(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/antibrut.v1.AntiBrutService/Try",
+		FullMethod: "/antibrut.v1.AntiBrutService/Check",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AntiBrutServiceServer).Try(ctx, req.(*TryRequest))
+		return srv.(AntiBrutServiceServer).Check(ctx, req.(*CheckRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -177,74 +177,74 @@ func _AntiBrutService_Reset_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AntiBrutService_AddToWhiteList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddToWhiteListRequest)
+func _AntiBrutService_AddIPToWhiteList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddIPToWhiteListRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AntiBrutServiceServer).AddToWhiteList(ctx, in)
+		return srv.(AntiBrutServiceServer).AddIPToWhiteList(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/antibrut.v1.AntiBrutService/AddToWhiteList",
+		FullMethod: "/antibrut.v1.AntiBrutService/AddIPToWhiteList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AntiBrutServiceServer).AddToWhiteList(ctx, req.(*AddToWhiteListRequest))
+		return srv.(AntiBrutServiceServer).AddIPToWhiteList(ctx, req.(*AddIPToWhiteListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AntiBrutService_DeleteFromWhiteList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteFromWhiteListRequest)
+func _AntiBrutService_DeleteIPFromWhiteList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteIPFromWhiteListRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AntiBrutServiceServer).DeleteFromWhiteList(ctx, in)
+		return srv.(AntiBrutServiceServer).DeleteIPFromWhiteList(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/antibrut.v1.AntiBrutService/DeleteFromWhiteList",
+		FullMethod: "/antibrut.v1.AntiBrutService/DeleteIPFromWhiteList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AntiBrutServiceServer).DeleteFromWhiteList(ctx, req.(*DeleteFromWhiteListRequest))
+		return srv.(AntiBrutServiceServer).DeleteIPFromWhiteList(ctx, req.(*DeleteIPFromWhiteListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AntiBrutService_AddToBlackList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddToBlackListRequest)
+func _AntiBrutService_AddIPToBlackList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddIPToBlackListRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AntiBrutServiceServer).AddToBlackList(ctx, in)
+		return srv.(AntiBrutServiceServer).AddIPToBlackList(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/antibrut.v1.AntiBrutService/AddToBlackList",
+		FullMethod: "/antibrut.v1.AntiBrutService/AddIPToBlackList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AntiBrutServiceServer).AddToBlackList(ctx, req.(*AddToBlackListRequest))
+		return srv.(AntiBrutServiceServer).AddIPToBlackList(ctx, req.(*AddIPToBlackListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AntiBrutService_DeleteFromBlackList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteFromBlackListRequest)
+func _AntiBrutService_DeleteIPFromBlackList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteIPFromBlackListRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AntiBrutServiceServer).DeleteFromBlackList(ctx, in)
+		return srv.(AntiBrutServiceServer).DeleteIPFromBlackList(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/antibrut.v1.AntiBrutService/DeleteFromBlackList",
+		FullMethod: "/antibrut.v1.AntiBrutService/DeleteIPFromBlackList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AntiBrutServiceServer).DeleteFromBlackList(ctx, req.(*DeleteFromBlackListRequest))
+		return srv.(AntiBrutServiceServer).DeleteIPFromBlackList(ctx, req.(*DeleteIPFromBlackListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -257,28 +257,28 @@ var AntiBrutService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AntiBrutServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Try",
-			Handler:    _AntiBrutService_Try_Handler,
+			MethodName: "Check",
+			Handler:    _AntiBrutService_Check_Handler,
 		},
 		{
 			MethodName: "Reset",
 			Handler:    _AntiBrutService_Reset_Handler,
 		},
 		{
-			MethodName: "AddToWhiteList",
-			Handler:    _AntiBrutService_AddToWhiteList_Handler,
+			MethodName: "AddIPToWhiteList",
+			Handler:    _AntiBrutService_AddIPToWhiteList_Handler,
 		},
 		{
-			MethodName: "DeleteFromWhiteList",
-			Handler:    _AntiBrutService_DeleteFromWhiteList_Handler,
+			MethodName: "DeleteIPFromWhiteList",
+			Handler:    _AntiBrutService_DeleteIPFromWhiteList_Handler,
 		},
 		{
-			MethodName: "AddToBlackList",
-			Handler:    _AntiBrutService_AddToBlackList_Handler,
+			MethodName: "AddIPToBlackList",
+			Handler:    _AntiBrutService_AddIPToBlackList_Handler,
 		},
 		{
-			MethodName: "DeleteFromBlackList",
-			Handler:    _AntiBrutService_DeleteFromBlackList_Handler,
+			MethodName: "DeleteIPFromBlackList",
+			Handler:    _AntiBrutService_DeleteIPFromBlackList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

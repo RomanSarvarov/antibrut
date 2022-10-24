@@ -4,48 +4,46 @@ import "google/protobuf/empty.proto";
 
 package antibrut.v1;
 
-option go_package = "./;antibrut";
+option go_package = "./;proto";
 
 service AntiBrutService {
-  rpc Try(TryRequest) returns (TryResponse);
+  rpc Check(CheckRequest) returns (CheckResponse);
   rpc Reset(ResetRequest) returns (google.protobuf.Empty);
 
-  rpc AddToWhiteList(AddToWhiteListRequest) returns (google.protobuf.Empty);
-  rpc DeleteFromWhiteList(DeleteFromWhiteListRequest) returns (google.protobuf.Empty);
+  rpc AddIPToWhiteList(AddIPToWhiteListRequest) returns (google.protobuf.Empty);
+  rpc DeleteIPFromWhiteList(DeleteIPFromWhiteListRequest) returns (google.protobuf.Empty);
 
-  rpc AddToBlackList(AddToBlackListRequest) returns (google.protobuf.Empty);
-  rpc DeleteFromBlackList(DeleteFromBlackListRequest) returns (google.protobuf.Empty);
+  rpc AddIPToBlackList(AddIPToBlackListRequest) returns (google.protobuf.Empty);
+  rpc DeleteIPFromBlackList(DeleteIPFromBlackListRequest) returns (google.protobuf.Empty);
 }
 
-message Attempt {
-  string type = 1;
-  string value = 2;
+message CheckRequest {
+  string login = 1;
+  string password = 2;
+  string ip = 3;
 }
 
-message TryRequest {
-  Attempt attempt = 1;
-}
-
-message TryResponse {
+message CheckResponse {
   bool ok = 1;
 }
 
 message ResetRequest {
-  Attempt attempt = 1;
+  string login = 1;
+  string ip = 2;
 }
 
-message AddToWhiteListRequest {
-  Attempt attempt = 1;
+message AddIPToWhiteListRequest {
+  string subnet = 1;
 }
 
-message DeleteFromWhiteListRequest {
-  Attempt attempt = 1;
+message DeleteIPFromWhiteListRequest {
+  string subnet = 1;
 }
 
-message AddToBlackListRequest {
-  Attempt attempt = 1;
+message AddIPToBlackListRequest {
+  string subnet = 1;
 }
 
-message DeleteFromBlackListRequest {
-  Attempt attempt = 1;
+message DeleteIPFromBlackListRequest {
+  string subnet = 1;
 }

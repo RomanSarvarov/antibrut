@@ -9,4 +9,4 @@ lint:
 	make proto-lint
 
 proto-lint:
-	cd proto && buf lint
+	cd proto && go run github.com/bufbuild/buf/cmd/buf lint

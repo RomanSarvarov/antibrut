@@ -30,11 +30,7 @@ type GRPCConfig struct {
 type SQLiteConfig struct {
 	// DSN настройки подключения к БД (путь к файлу).
 	// Либо :memory:, тогда будет использовать оперативная память.
-	DSN string `env:"ANTIBRUT_SQLITE_DSN,notEmpty" envDefault:"./data/db.sqlite"`
-
-	// MigrationsPath путь до файлов миграции.
-	// Если значение пустое, то миграции запущены не будут.
-	MigrationsPath string `env:"ANTIBRUT_SQLITE_MIGRATIONS_PATH" envDefault:"./migrations/sqlite"`
+	DSN string `env:"ANTIBRUT_SQLITE_DSN,notEmpty" envDefault:"./data/db.sqlite?_foreign_keys=on"`
 }
 
 // New создает Config.
@@ -53,7 +49,7 @@ func Load() (*Config, error) {
 	}
 
 	// Заполним структуру env переменными.
-	if err = env.Parse(cfg); err != nil {
+	if err := env.Parse(cfg); err != nil {
 		return nil, errors.Wrap(err, "env parse error")
 	}
 

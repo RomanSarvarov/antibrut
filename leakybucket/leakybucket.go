@@ -1,31 +1,71 @@
 package leakybucket
 
+import (
+	"context"
+
+	"github.com/pkg/errors"
+
+	"github.com/romsar/antibrut"
+	"github.com/romsar/antibrut/clock"
+)
+
 type Service struct {
-	s storage
+	repo repository
 }
 
-func New(s storage) *Service {
+type repository interface {
+	FindLimitation(ctx context.Context, c antibrut.LimitationCode) (*antibrut.Limitation, error)
+
+	FindBucket(ctx context.Context, c antibrut.LimitationCode, val string) (*antibrut.Bucket, error)
+	CreateBucket(ctx context.Context, bucket *antibrut.Bucket) (*antibrut.Bucket, error)
+
+	FindAttempts(ctx context.Context, filter antibrut.AttemptFilter) ([]*antibrut.Attempt, error)
+	CreateAttempt(ctx context.Context, attempt *antibrut.Attempt) (*antibrut.Attempt, error)
+}
+
+func New(repo repository) *Service {
 	return &Service{
-		s: s,
+		repo: repo,
 	}
 }
 
-type storage interface {
-	/*FindLimit(c LimitCode) (*Limit, error)
-	FindOrCreateBucket(lc LimitCode, val string) (*Bucket, error)*/
-}
+func (s *Service) Check(ctx context.Context, c antibrut.LimitationCode, val string) error {
+	limit, err := s.repo.FindLimitation(ctx, c)
+	if err != nil {
+		return err
+	}
 
-type LimitCode string
+	bucket, err := s.repo.FindBucket(ctx, limit.Code, val)
+	if err != nil {
+		if !errors.Is(err, antibrut.ErrNotFound) {
+			return err
+		}
 
-type Limit struct {
-	Code      LimitCode `db:"code"`
-	Attempts  int       `db:"attempts"`
-	PerSecond int       `db:"per_second"`
-}
+		bucket, err = s.repo.CreateBucket(ctx, &antibrut.Bucket{
+			LimitationCode: c,
+			Value:          val,
+		})
+		if err != nil {
+			return err
+		}
+	}
 
-type Bucket struct {
-	Max       uint
-	LimitCode LimitCode
-	Value     string
-	Count     int
+	attempts, err := s.repo.FindAttempts(ctx, antibrut.AttemptFilter{
+		BucketID:      bucket.ID,
+		CreatedAtFrom: clock.Now().Add(-limit.Interval.Duration),
+		CreatedAtTo:   clock.Now(),
+	})
+	if err != nil {
+		return err
+	}
+
+	if len(attempts) >= limit.MaxAttempts {
+		return antibrut.ErrMaxAttemptsExceeded
+	}
+
+	_, err = s.repo.CreateAttempt(ctx, &antibrut.Attempt{
+		BucketID: bucket.ID,
+	})
+
+	return nil
 }

@@ -1,11 +1,10 @@
-module antibrut
+module github.com/romsar/antibrut
 
 go 1.19
 
 require (
 	github.com/bufbuild/buf v1.9.0
 	github.com/caarlos0/env/v6 v6.10.1
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.12.0
 	github.com/joho/godotenv v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/pkg/errors v0.9.1
@@ -63,6 +62,7 @@ require (
 	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20221017152216-f25eb7ecb193 // indirect
+	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783 // indirect
 	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/term v0.0.0-20220919170432-7a66f970e087 // indirect
 	golang.org/x/text v0.3.8 // indirect
