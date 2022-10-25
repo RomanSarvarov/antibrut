@@ -18,3 +18,5 @@ type BucketFilter struct {
 	Value          string
 	DateTo         clock.Time
 }
+
+type ResetFilter = BucketFilter

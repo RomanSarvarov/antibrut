@@ -27,6 +27,7 @@ type Service struct {
 
 type rateLimiter interface {
 	Check(ctx context.Context, c LimitationCode, val string) error
+	Reset(ctx context.Context, filter ResetFilter) error
 }
 
 type repository interface {
@@ -35,7 +36,6 @@ type repository interface {
 	CreateIPRule(ctx context.Context, ipRule *IPRule) (*IPRule, error)
 	UpdateIPRule(ctx context.Context, id IPRuleID, ipRule *IPRule) (*IPRule, error)
 	DeleteIPRuleBySubnet(ctx context.Context, subnet Subnet) (int64, error)
-	DeleteBuckets(ctx context.Context, filter BucketFilter) (int64, error)
 }
 
 type Config struct {
@@ -103,11 +103,10 @@ func (s *Service) Reset(ctx context.Context, login Login, ip IP) error {
 			return nil
 		}
 
-		_, err := s.repo.DeleteBuckets(ctx, BucketFilter{
+		return s.rl.Reset(ctx, ResetFilter{
 			LimitationCode: LoginLimitation,
 			Value:          login.String(),
 		})
-		return err
 	})
 
 	errGrp.Go(func() error {
@@ -115,11 +114,10 @@ func (s *Service) Reset(ctx context.Context, login Login, ip IP) error {
 			return nil
 		}
 
-		_, err := s.repo.DeleteBuckets(ctx, BucketFilter{
+		return s.rl.Reset(ctx, ResetFilter{
 			LimitationCode: IPLimitation,
 			Value:          ip.String(),
 		})
-		return err
 	})
 
 	if err := errGrp.Wait(); err != nil {
@@ -170,10 +168,9 @@ func (s *Service) Work(ctx context.Context) error {
 func (s *Service) work(ctx context.Context) error {
 	// Удалить неактуальные бакеты.
 	if s.cfg.PruneDuration.ToDuration() > 0 {
-		_, err := s.repo.DeleteBuckets(ctx, BucketFilter{
+		return s.rl.Reset(ctx, ResetFilter{
 			DateTo: clock.Now().Add(-s.cfg.PruneDuration.ToDuration()),
 		})
-		return err
 	}
 	return nil
 }

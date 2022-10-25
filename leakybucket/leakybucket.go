@@ -18,6 +18,7 @@ type repository interface {
 
 	FindBucket(ctx context.Context, c antibrut.LimitationCode, val string) (*antibrut.Bucket, error)
 	CreateBucket(ctx context.Context, bucket *antibrut.Bucket) (*antibrut.Bucket, error)
+	DeleteBuckets(ctx context.Context, filter antibrut.BucketFilter) (int64, error)
 
 	FindAttempts(ctx context.Context, filter antibrut.AttemptFilter) ([]*antibrut.Attempt, error)
 	CreateAttempt(ctx context.Context, attempt *antibrut.Attempt) (*antibrut.Attempt, error)
@@ -68,4 +69,9 @@ func (s *Service) Check(ctx context.Context, c antibrut.LimitationCode, val stri
 	})
 
 	return nil
+}
+
+func (s *Service) Reset(ctx context.Context, filter antibrut.ResetFilter) error {
+	_, err := s.repo.DeleteBuckets(ctx, filter)
+	return err
 }
