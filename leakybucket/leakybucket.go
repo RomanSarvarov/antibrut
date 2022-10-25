@@ -68,7 +68,7 @@ func (s *Service) Check(ctx context.Context, c antibrut.LimitationCode, val stri
 		BucketID: bucket.ID,
 	})
 
-	return nil
+	return err
 }
 
 func (s *Service) Reset(ctx context.Context, filter antibrut.ResetFilter) error {
