@@ -44,6 +44,10 @@ func (s *Server) Check(ctx context.Context, req *proto.CheckRequest) (*proto.Che
 }
 
 func (s *Server) Reset(ctx context.Context, req *proto.ResetRequest) (*emptypb.Empty, error) {
+	if req.GetLogin() == "" && req.GetIp() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no data to reset")
+	}
+
 	err := s.service.Reset(
 		ctx,
 		antibrut.Login(req.GetLogin()),
@@ -57,6 +61,10 @@ func (s *Server) Reset(ctx context.Context, req *proto.ResetRequest) (*emptypb.E
 }
 
 func (s *Server) AddIPToWhiteList(ctx context.Context, req *proto.AddIPToWhiteListRequest) (*emptypb.Empty, error) {
+	if req.GetSubnet() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no subnet passed")
+	}
+
 	err := s.service.AddIPToWhiteList(
 		ctx,
 		antibrut.Subnet(req.GetSubnet()),
@@ -69,6 +77,10 @@ func (s *Server) AddIPToWhiteList(ctx context.Context, req *proto.AddIPToWhiteLi
 }
 
 func (s *Server) DeleteIPFromWhiteList(ctx context.Context, req *proto.DeleteIPFromWhiteListRequest) (*emptypb.Empty, error) {
+	if req.GetSubnet() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no subnet passed")
+	}
+
 	err := s.service.DeleteIPFromWhiteList(
 		ctx,
 		antibrut.Subnet(req.GetSubnet()),
@@ -81,6 +93,10 @@ func (s *Server) DeleteIPFromWhiteList(ctx context.Context, req *proto.DeleteIPF
 }
 
 func (s *Server) AddIPToBlackList(ctx context.Context, req *proto.AddIPToBlackListRequest) (*emptypb.Empty, error) {
+	if req.GetSubnet() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no subnet passed")
+	}
+
 	err := s.service.AddIPToBlackList(
 		ctx,
 		antibrut.Subnet(req.GetSubnet()),
@@ -93,6 +109,10 @@ func (s *Server) AddIPToBlackList(ctx context.Context, req *proto.AddIPToBlackLi
 }
 
 func (s *Server) DeleteIPFromBlackList(ctx context.Context, req *proto.DeleteIPFromBlackListRequest) (*emptypb.Empty, error) {
+	if req.GetSubnet() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no subnet passed")
+	}
+
 	err := s.service.DeleteIPFromBlackList(
 		ctx,
 		antibrut.Subnet(req.GetSubnet()),

@@ -6,6 +6,8 @@ import (
 	"github.com/caarlos0/env/v6"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
+
+	"github.com/romsar/antibrut/clock"
 )
 
 // envFilePath путь до .env файла.
@@ -18,6 +20,12 @@ type Config struct {
 
 	// SQLiteConfig это настройки для БД SQLite.
 	SQLite SQLiteConfig
+
+	// PruneDuration количество времени, после
+	// которого бакеты считаются устаревшими и удаляются.
+	// Если указать "0", то удаление неактуальных,
+	// бакетов производиться не будет.
+	PruneDuration clock.Duration `env:"ANTIBRUT_PRUNE_DURATION" envDefault:"1h"`
 }
 
 // GRPCConfig это настройки GRPC.

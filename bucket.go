@@ -16,4 +16,5 @@ type Bucket struct {
 type BucketFilter struct {
 	LimitationCode LimitationCode
 	Value          string
+	DateTo         clock.Time
 }

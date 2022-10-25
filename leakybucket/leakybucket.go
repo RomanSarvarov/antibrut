@@ -52,7 +52,7 @@ func (s *Service) Check(ctx context.Context, c antibrut.LimitationCode, val stri
 
 	attempts, err := s.repo.FindAttempts(ctx, antibrut.AttemptFilter{
 		BucketID:      bucket.ID,
-		CreatedAtFrom: clock.Now().Add(-limit.Interval.Duration),
+		CreatedAtFrom: clock.Now().Add(-limit.Interval.ToDuration()),
 		CreatedAtTo:   clock.Now(),
 	})
 	if err != nil {

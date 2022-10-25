@@ -69,18 +69,29 @@ func serve(cmd *cobra.Command, args []string) error {
 	rateLimiter := leakybucket.New(db)
 
 	// service
-	service := antibrut.NewService(db, rateLimiter)
+	service := antibrut.NewService(db, rateLimiter, antibrut.Config{
+		PruneDuration: cfg.PruneDuration,
+	})
 
 	// grpc server
 	server := localgrpc.NewServer(service)
 
 	errGrp.Go(func() error {
+		defer cancel()
+
 		cmd.Printf("Starting server on `%s`\n", cfg.GRPC.Address)
 
 		if err := server.Start(cfg.GRPC.Address); err != nil {
 			return err
 		}
 		return nil
+	})
+
+	// antibrut worker
+	errGrp.Go(func() error {
+		defer cancel()
+
+		return service.Work(ctx)
 	})
 
 	<-ctx.Done()

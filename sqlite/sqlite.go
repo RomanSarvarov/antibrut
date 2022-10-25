@@ -208,6 +208,92 @@ func (r *Repository) CreateAttempt(ctx context.Context, attempt *antibrut.Attemp
 	return attempt, nil
 }
 
+func (r *Repository) FindIPRuleBySubnet(ctx context.Context, subnet antibrut.Subnet) (*antibrut.IPRule, error) {
+	var rule antibrut.IPRule
+
+	err := r.db.QueryRowContext(ctx, `
+		SELECT id, type, subnet
+		FROM ip_rules
+		WHERE subnet = ?
+	`, subnet).Scan(&rule.ID, &rule.Type, &rule.Subnet)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = antibrut.ErrNotFound
+		}
+
+		return nil, errors.Wrap(err, "find ip rule error")
+	}
+
+	return &rule, nil
+}
+
+func (r *Repository) CreateIPRule(ctx context.Context, ipRule *antibrut.IPRule) (*antibrut.IPRule, error) {
+	result, err := r.db.ExecContext(ctx, `
+		INSERT INTO ip_rules (type, subnet)
+		VALUES (?, ?)
+	`,
+		ipRule.Type,
+		ipRule.Subnet,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "create ip rule error")
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return nil, errors.Wrap(err, "create ip rule error")
+	}
+
+	ipRule.ID = antibrut.IPRuleID(id)
+
+	return ipRule, nil
+}
+
+func (r *Repository) UpdateIPRule(
+	ctx context.Context,
+	id antibrut.IPRuleID,
+	ipRule *antibrut.IPRule,
+) (*antibrut.IPRule, error) {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE ip_rules 
+		SET type = ?, subnet = ?
+		WHERE id = ?
+	`,
+		ipRule.Type,
+		ipRule.Subnet,
+		id,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "update ip rule error")
+	}
+
+	ipRule.ID = id
+
+	return ipRule, nil
+}
+
+func (r *Repository) DeleteIPRuleBySubnet(ctx context.Context, subnet antibrut.Subnet) (int64, error) {
+	result, err := r.db.ExecContext(ctx, `
+		DELETE 
+		FROM ip_rules
+		WHERE subnet = ?
+	`,
+		subnet,
+	)
+	if err != nil {
+		return 0, errors.Wrap(err, "delete ip rules by subnet error")
+	}
+
+	deletedCnt, err := result.RowsAffected()
+	if err != nil {
+		return 0, errors.Wrap(err, "delete ip rules by subnet error")
+	}
+
+	return deletedCnt, nil
+
+	return result.RowsAffected()
+}
+
 func (r *Repository) FindIPRulesByIP(ctx context.Context, ip antibrut.IP) ([]*antibrut.IPRule, error) {
 	ipParts := strings.Split(ip.String(), ".")
 	ipWithoutLastOctet := strings.Join(ipParts[0:3], ".") + ".%"
@@ -241,7 +327,7 @@ func (r *Repository) FindIPRulesByIP(ctx context.Context, ip antibrut.IP) ([]*an
 	return rules, nil
 }
 
-func (r *Repository) DeleteBuckets(ctx context.Context, filter antibrut.BucketFilter) (int64, error) {
+func (r *Repository) DeleteBuckets(ctx context.Context, filter antibrut.BucketFilter) (n int64, err error) {
 	where, args := []string{"1 = 1"}, []any{}
 
 	if filter.LimitationCode != "" {
@@ -250,6 +336,10 @@ func (r *Repository) DeleteBuckets(ctx context.Context, filter antibrut.BucketFi
 
 	if filter.Value != "" {
 		where, args = append(where, "value = ?"), append(args, filter.Value)
+	}
+
+	if !filter.DateTo.IsZero() {
+		where, args = append(where, "created_at <= ?"), append(args, filter.DateTo)
 	}
 
 	result, err := r.db.ExecContext(ctx, `
