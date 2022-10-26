@@ -1,5 +1,5 @@
 run:
-	go run ./cmd/antibrut run
+	go run -tags=sqlite_unlock_notify ./cmd/antibrut run
 
 generate:
 	go generate ./...

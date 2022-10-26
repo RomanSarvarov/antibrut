@@ -39,6 +39,10 @@ func New(dsn string) (*Repository, error) {
 		return nil, errors.Wrap(err, "cannot ping database")
 	}
 
+	if _, err := db.Exec(`PRAGMA journal_mode = wal;`); err != nil {
+		return nil, errors.Wrap(err, "enable wal error")
+	}
+
 	if _, err := db.Exec(`PRAGMA foreign_keys = ON;`); err != nil {
 		return nil, errors.Wrap(err, "foreign keys pragma error")
 	}
