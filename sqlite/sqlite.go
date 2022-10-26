@@ -276,13 +276,23 @@ func (r *Repository) UpdateIPRule(
 	return ipRule, nil
 }
 
-func (r *Repository) DeleteIPRuleBySubnet(ctx context.Context, subnet antibrut.Subnet) (int64, error) {
+func (r *Repository) DeleteIPRules(ctx context.Context, filter antibrut.IPRuleFilter) (int64, error) {
+	where, args := []string{"1 = 1"}, []any{}
+
+	if filter.Type != 0 {
+		where, args = append(where, "type = ?"), append(args, filter.Type)
+	}
+
+	if filter.Subnet != "" {
+		where, args = append(where, "subnet = ?"), append(args, filter.Subnet)
+	}
+
 	result, err := r.db.ExecContext(ctx, `
-		DELETE 
+		DELETE
 		FROM ip_rules
-		WHERE subnet = ?
-	`,
-		subnet,
+		WHERE `+strings.Join(where, " AND ")+`
+		`,
+		args...,
 	)
 	if err != nil {
 		return 0, errors.Wrap(err, "delete ip rules by subnet error")
@@ -294,8 +304,6 @@ func (r *Repository) DeleteIPRuleBySubnet(ctx context.Context, subnet antibrut.S
 	}
 
 	return deletedCnt, nil
-
-	return result.RowsAffected()
 }
 
 func (r *Repository) FindIPRulesByIP(ctx context.Context, ip antibrut.IP) ([]*antibrut.IPRule, error) {

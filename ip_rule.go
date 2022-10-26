@@ -22,3 +22,8 @@ func (r IPRule) IsWhiteList() bool {
 func (r IPRule) IsBlackList() bool {
 	return r.Type == BlackList
 }
+
+type IPRuleFilter struct {
+	Type   IPRuleType
+	Subnet Subnet
+}

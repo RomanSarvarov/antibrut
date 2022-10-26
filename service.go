@@ -35,7 +35,7 @@ type repository interface {
 	FindIPRuleBySubnet(ctx context.Context, subnet Subnet) (*IPRule, error)
 	CreateIPRule(ctx context.Context, ipRule *IPRule) (*IPRule, error)
 	UpdateIPRule(ctx context.Context, id IPRuleID, ipRule *IPRule) (*IPRule, error)
-	DeleteIPRuleBySubnet(ctx context.Context, subnet Subnet) (int64, error)
+	DeleteIPRules(ctx context.Context, filter IPRuleFilter) (int64, error)
 }
 
 type Config struct {
@@ -132,7 +132,10 @@ func (s *Service) AddIPToWhiteList(ctx context.Context, subnet Subnet) error {
 }
 
 func (s *Service) DeleteIPFromWhiteList(ctx context.Context, subnet Subnet) error {
-	_, err := s.repo.DeleteIPRuleBySubnet(ctx, subnet)
+	_, err := s.repo.DeleteIPRules(ctx, IPRuleFilter{
+		Type:   WhiteList,
+		Subnet: subnet,
+	})
 	return err
 }
 
@@ -141,7 +144,10 @@ func (s *Service) AddIPToBlackList(ctx context.Context, subnet Subnet) error {
 }
 
 func (s *Service) DeleteIPFromBlackList(ctx context.Context, subnet Subnet) error {
-	_, err := s.repo.DeleteIPRuleBySubnet(ctx, subnet)
+	_, err := s.repo.DeleteIPRules(ctx, IPRuleFilter{
+		Type:   BlackList,
+		Subnet: subnet,
+	})
 	return err
 }
 
@@ -182,7 +188,7 @@ func (s *Service) createOrUpdateIPRule(ctx context.Context, t IPRuleType, subnet
 			return err
 		}
 
-		rule, err = s.repo.CreateIPRule(ctx, &IPRule{
+		_, err := s.repo.CreateIPRule(ctx, &IPRule{
 			Type:   t,
 			Subnet: subnet,
 		})

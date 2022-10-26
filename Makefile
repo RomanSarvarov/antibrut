@@ -1,5 +1,7 @@
+go_build_flags=-tags=sqlite_unlock_notify
+
 run:
-	go run -tags=sqlite_unlock_notify ./cmd/antibrut run
+	go run ${go_build_flags} ./cmd/antibrut run
 
 generate:
 	go generate ./...
