@@ -22,7 +22,8 @@ var ErrIPInBlackList = errors.New("ip address in black list")
 type Service struct {
 	repo repository
 	rl   rateLimiter
-	cfg  Config
+
+	pruneDuration clock.Duration
 }
 
 type rateLimiter interface {
@@ -38,16 +39,25 @@ type repository interface {
 	DeleteIPRules(ctx context.Context, filter IPRuleFilter) (int64, error)
 }
 
-type Config struct {
-	PruneDuration clock.Duration
+type Option func(s *Service)
+
+func WithPruneDuration(d clock.Duration) Option {
+	return func(s *Service) {
+		s.pruneDuration = d
+	}
 }
 
-func NewService(repo repository, rl rateLimiter, cfg Config) *Service {
-	return &Service{
+func NewService(repo repository, rl rateLimiter, opts ...Option) *Service {
+	s := &Service{
 		repo: repo,
 		rl:   rl,
-		cfg:  cfg,
 	}
+
+	for _, opt := range opts {
+		opt(s)
+	}
+
+	return s
 }
 
 func (s *Service) Check(ctx context.Context, login Login, pass Password, ip IP) error {
@@ -173,9 +183,9 @@ func (s *Service) Work(ctx context.Context) error {
 
 func (s *Service) work(ctx context.Context) error {
 	// Удалить неактуальные бакеты.
-	if s.cfg.PruneDuration.ToDuration() > 0 {
+	if s.pruneDuration.ToDuration() > 0 {
 		return s.rl.Reset(ctx, ResetFilter{
-			DateTo: clock.Now().Add(-s.cfg.PruneDuration.ToDuration()),
+			DateTo: clock.Now().Add(-s.pruneDuration.ToDuration()),
 		})
 	}
 	return nil

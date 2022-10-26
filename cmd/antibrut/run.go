@@ -69,9 +69,11 @@ func serve(cmd *cobra.Command, args []string) error {
 	rateLimiter := leakybucket.New(db)
 
 	// service
-	service := antibrut.NewService(db, rateLimiter, antibrut.Config{
-		PruneDuration: cfg.PruneDuration,
-	})
+	service := antibrut.NewService(
+		db,
+		rateLimiter,
+		antibrut.WithPruneDuration(cfg.PruneDuration),
+	)
 
 	// grpc server
 	server := localgrpc.NewServer(service)
