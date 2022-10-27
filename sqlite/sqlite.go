@@ -17,14 +17,17 @@ import (
 //go:embed migrations/*.sql
 var migrationsFS embed.FS
 
+// Repository предоставляет API для работы с хранилищем.
 type Repository struct {
 	db database
 }
 
+// database содержит в себе методы для работы с БД.
 type database struct {
 	*sql.DB
 }
 
+// New создает и открывает подключение к БД.
 func New(dsn string) (*Repository, error) {
 	if dsn == "" {
 		return nil, errors.New("dsn required")
@@ -54,10 +57,15 @@ func New(dsn string) (*Repository, error) {
 	return s, nil
 }
 
+// Close закрывает подключение к БД.
 func (r *Repository) Close() error {
-	return r.db.Close()
+	if r.db.DB != nil {
+		return r.db.Close()
+	}
+	return nil
 }
 
+// Migrate запускает миграции.
 func (r *Repository) Migrate() error {
 	if err := goose.SetDialect("sqlite3"); err != nil {
 		return errors.Wrap(err, "migrate error")
@@ -72,6 +80,8 @@ func (r *Repository) Migrate() error {
 	return nil
 }
 
+// FindLimitation находит antibrut.Limitation.
+// Если совпадений нет, вернет antibrut.ErrNotFound.
 func (r *Repository) FindLimitation(ctx context.Context, c antibrut.LimitationCode) (*antibrut.Limitation, error) {
 	var limitation antibrut.Limitation
 
@@ -91,6 +101,8 @@ func (r *Repository) FindLimitation(ctx context.Context, c antibrut.LimitationCo
 	return &limitation, nil
 }
 
+// FindBucket находит antibrut.Bucket.
+// Если совпадений нет, вернет antibrut.ErrNotFound.
 func (r *Repository) FindBucket(
 	ctx context.Context,
 	c antibrut.LimitationCode,
@@ -114,6 +126,7 @@ func (r *Repository) FindBucket(
 	return &bucket, nil
 }
 
+// CreateBucket создает antibrut.Bucket.
 func (r *Repository) CreateBucket(ctx context.Context, bucket *antibrut.Bucket) (*antibrut.Bucket, error) {
 	bucket.CreatedAt = clock.Now()
 
@@ -139,6 +152,42 @@ func (r *Repository) CreateBucket(ctx context.Context, bucket *antibrut.Bucket) 
 	return bucket, nil
 }
 
+// DeleteBuckets удаляет нужные antibrut.Bucket.
+func (r *Repository) DeleteBuckets(ctx context.Context, filter antibrut.BucketFilter) (n int64, err error) {
+	where, args := []string{"1 = 1"}, []any{}
+
+	if filter.LimitationCode != "" {
+		where, args = append(where, "limitation_code = ?"), append(args, filter.LimitationCode)
+	}
+
+	if filter.Value != "" {
+		where, args = append(where, "value = ?"), append(args, filter.Value)
+	}
+
+	if !filter.DateTo.IsZero() {
+		where, args = append(where, "created_at <= ?"), append(args, filter.DateTo)
+	}
+
+	result, err := r.db.ExecContext(ctx, `
+		DELETE
+		FROM buckets
+		WHERE `+strings.Join(where, " AND ")+`
+		`,
+		args...,
+	)
+	if err != nil {
+		return 0, errors.Wrap(err, "delete buckets error")
+	}
+
+	deletedCnt, err := result.RowsAffected()
+	if err != nil {
+		return 0, errors.Wrap(err, "delete buckets error")
+	}
+
+	return deletedCnt, nil
+}
+
+// FindAttempts находит совпадающие antibrut.Attempt.
 func (r *Repository) FindAttempts(ctx context.Context, filter antibrut.AttemptFilter) ([]*antibrut.Attempt, error) {
 	where, args := []string{"1 = 1"}, []any{}
 
@@ -188,6 +237,7 @@ func (r *Repository) FindAttempts(ctx context.Context, filter antibrut.AttemptFi
 	return attempts, nil
 }
 
+// CreateAttempt создает antibrut.Attempt.
 func (r *Repository) CreateAttempt(ctx context.Context, attempt *antibrut.Attempt) (*antibrut.Attempt, error) {
 	attempt.CreatedAt = clock.Now()
 
@@ -212,6 +262,8 @@ func (r *Repository) CreateAttempt(ctx context.Context, attempt *antibrut.Attemp
 	return attempt, nil
 }
 
+// FindIPRuleBySubnet находит antibrut.IPRule на основе подсети.
+// Если совпадений нет, вернет antibrut.ErrNotFound.
 func (r *Repository) FindIPRuleBySubnet(ctx context.Context, subnet antibrut.Subnet) (*antibrut.IPRule, error) {
 	var rule antibrut.IPRule
 
@@ -231,6 +283,7 @@ func (r *Repository) FindIPRuleBySubnet(ctx context.Context, subnet antibrut.Sub
 	return &rule, nil
 }
 
+// CreateIPRule создает antibrut.IPRule.
 func (r *Repository) CreateIPRule(ctx context.Context, ipRule *antibrut.IPRule) (*antibrut.IPRule, error) {
 	result, err := r.db.ExecContext(ctx, `
 		INSERT INTO ip_rules (type, subnet)
@@ -253,6 +306,7 @@ func (r *Repository) CreateIPRule(ctx context.Context, ipRule *antibrut.IPRule) 
 	return ipRule, nil
 }
 
+// UpdateIPRule обновляет antibrut.IPRule.
 func (r *Repository) UpdateIPRule(
 	ctx context.Context,
 	id antibrut.IPRuleID,
@@ -276,6 +330,7 @@ func (r *Repository) UpdateIPRule(
 	return ipRule, nil
 }
 
+// DeleteIPRules удаляет совпадения из antibrut.IPRule.
 func (r *Repository) DeleteIPRules(ctx context.Context, filter antibrut.IPRuleFilter) (int64, error) {
 	where, args := []string{"1 = 1"}, []any{}
 
@@ -306,6 +361,7 @@ func (r *Repository) DeleteIPRules(ctx context.Context, filter antibrut.IPRuleFi
 	return deletedCnt, nil
 }
 
+// FindIPRulesByIP находит совпадения antibrut.IPRule на основе IP адреса.
 func (r *Repository) FindIPRulesByIP(ctx context.Context, ip antibrut.IP) ([]*antibrut.IPRule, error) {
 	ipParts := strings.Split(ip.String(), ".")
 	ipWithoutLastOctet := strings.Join(ipParts[0:3], ".") + ".%"
@@ -337,38 +393,4 @@ func (r *Repository) FindIPRulesByIP(ctx context.Context, ip antibrut.IP) ([]*an
 	}
 
 	return rules, nil
-}
-
-func (r *Repository) DeleteBuckets(ctx context.Context, filter antibrut.BucketFilter) (n int64, err error) {
-	where, args := []string{"1 = 1"}, []any{}
-
-	if filter.LimitationCode != "" {
-		where, args = append(where, "limitation_code = ?"), append(args, filter.LimitationCode)
-	}
-
-	if filter.Value != "" {
-		where, args = append(where, "value = ?"), append(args, filter.Value)
-	}
-
-	if !filter.DateTo.IsZero() {
-		where, args = append(where, "created_at <= ?"), append(args, filter.DateTo)
-	}
-
-	result, err := r.db.ExecContext(ctx, `
-		DELETE
-		FROM buckets
-		WHERE `+strings.Join(where, " AND ")+`
-		`,
-		args...,
-	)
-	if err != nil {
-		return 0, errors.Wrap(err, "delete buckets error")
-	}
-
-	deletedCnt, err := result.RowsAffected()
-	if err != nil {
-		return 0, errors.Wrap(err, "delete buckets error")
-	}
-
-	return deletedCnt, nil
 }

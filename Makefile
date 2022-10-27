@@ -12,3 +12,6 @@ lint:
 
 proto-lint:
 	cd proto && go run github.com/bufbuild/buf/cmd/buf lint
+
+test:
+	go test -race ./...

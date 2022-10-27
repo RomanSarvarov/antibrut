@@ -12,6 +12,7 @@ import (
 	proto "github.com/romsar/antibrut/proto/antibrut/v1"
 )
 
+// Check проверяет "хороший" ли запрос, или его следует отклонить.
 func (s *Server) Check(ctx context.Context, req *proto.CheckRequest) (*proto.CheckResponse, error) {
 	if req.GetLogin() == "" && req.GetPassword() == "" && req.GetIp() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no data to check")
@@ -43,6 +44,7 @@ func (s *Server) Check(ctx context.Context, req *proto.CheckRequest) (*proto.Che
 	}, nil
 }
 
+// Reset удаляет бакеты из хранилища.
 func (s *Server) Reset(ctx context.Context, req *proto.ResetRequest) (*emptypb.Empty, error) {
 	if req.GetLogin() == "" && req.GetIp() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no data to reset")
@@ -60,6 +62,7 @@ func (s *Server) Reset(ctx context.Context, req *proto.ResetRequest) (*emptypb.E
 	return &emptypb.Empty{}, nil
 }
 
+// AddIPToWhiteList добавляет IP адрес в белый список.
 func (s *Server) AddIPToWhiteList(ctx context.Context, req *proto.AddIPToWhiteListRequest) (*emptypb.Empty, error) {
 	if req.GetSubnet() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no subnet passed")
@@ -76,6 +79,7 @@ func (s *Server) AddIPToWhiteList(ctx context.Context, req *proto.AddIPToWhiteLi
 	return &emptypb.Empty{}, nil
 }
 
+// DeleteIPFromWhiteList удаляет IP адрес из белого списка.
 func (s *Server) DeleteIPFromWhiteList(ctx context.Context, req *proto.DeleteIPFromWhiteListRequest) (*emptypb.Empty, error) {
 	if req.GetSubnet() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no subnet passed")
@@ -92,6 +96,7 @@ func (s *Server) DeleteIPFromWhiteList(ctx context.Context, req *proto.DeleteIPF
 	return &emptypb.Empty{}, nil
 }
 
+// AddIPToBlackList добавляет IP адрес в чёрный список.
 func (s *Server) AddIPToBlackList(ctx context.Context, req *proto.AddIPToBlackListRequest) (*emptypb.Empty, error) {
 	if req.GetSubnet() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no subnet passed")
@@ -108,6 +113,7 @@ func (s *Server) AddIPToBlackList(ctx context.Context, req *proto.AddIPToBlackLi
 	return &emptypb.Empty{}, nil
 }
 
+// DeleteIPFromBlackList удаляет IP адрес из чёрного списка.
 func (s *Server) DeleteIPFromBlackList(ctx context.Context, req *proto.DeleteIPFromBlackListRequest) (*emptypb.Empty, error) {
 	if req.GetSubnet() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no subnet passed")
