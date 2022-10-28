@@ -286,9 +286,10 @@ func TestSubnet_Contains(t *testing.T) {
 func TestService_Work(t *testing.T) {
 	t.Parallel()
 
-	clock.TimeNowFunc = func() time.Time {
+	clock.SetTimeNowFunc(func() time.Time {
 		return time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
-	}
+	})
+	defer clock.ResetTimeNowFunc()
 
 	t.Run("no prune duration", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)

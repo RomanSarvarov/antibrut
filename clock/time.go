@@ -1,9 +1,30 @@
 package clock
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
-// TimeNowFunc функция для определения текущего времени.
-var TimeNowFunc = time.Now
+var mu sync.Mutex
+
+// timeNowFunc функция для определения текущего времени.
+var timeNowFunc = time.Now
+
+// ResetTimeNowFunc сбрасывает функцию для определния текущего времени.
+func ResetTimeNowFunc() {
+	mu.Lock()
+	defer mu.Unlock()
+
+	timeNowFunc = time.Now
+}
+
+// SetTimeNowFunc устанавливает функцию для определения текущего времени.
+func SetTimeNowFunc(f func() time.Time) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	timeNowFunc = f
+}
 
 // Time структура для работы с датой и временем.
 type Time = time.Time
@@ -15,5 +36,8 @@ func NewFromTime(t time.Time) Time {
 
 // Now возвращает текущее время.
 func Now() Time {
-	return TimeNowFunc()
+	mu.Lock()
+	defer mu.Unlock()
+
+	return timeNowFunc()
 }
