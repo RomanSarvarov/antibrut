@@ -289,7 +289,7 @@ func TestService_Work(t *testing.T) {
 	clock.SetTimeNowFunc(func() time.Time {
 		return time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
 	})
-	defer clock.ResetTimeNowFunc()
+	t.Cleanup(func() { clock.ResetTimeNowFunc() })
 
 	t.Run("no prune duration", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
