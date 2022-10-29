@@ -20,6 +20,8 @@ type mocks struct {
 }
 
 func newFakeService(t *testing.T, opts ...antibrut.Option) (*antibrut.Service, mocks) {
+	t.Helper()
+
 	r := mock.NewRepository(t)
 	rl := mock.NewRateLimiter(t)
 	s := antibrut.NewService(r, rl, opts...)
@@ -36,7 +38,7 @@ func TestService_AddIPToWhiteList(t *testing.T) {
 	t.Run("already exists", func(t *testing.T) {
 		s, m := newFakeService(t)
 
-		subnet := antibrut.Subnet("127.0.0.1/10")
+		subnet := antibrut.Subnet("192.168.5.0/26")
 
 		m.r.
 			On(
@@ -46,18 +48,18 @@ func TestService_AddIPToWhiteList(t *testing.T) {
 			).
 			Return(&antibrut.IPRule{
 				Type:   antibrut.WhiteList,
-				Subnet: "127.0.0.1/10",
+				Subnet: "192.168.5.0/26",
 			}, nil).
 			Once()
 
-		err := s.AddIPToWhiteList(context.Background(), "127.0.0.1/10")
+		err := s.AddIPToWhiteList(context.Background(), "192.168.5.0/26")
 		require.NoError(t, err)
 	})
 
 	t.Run("create", func(t *testing.T) {
 		s, m := newFakeService(t)
 
-		subnet := antibrut.Subnet("127.0.0.1/10")
+		subnet := antibrut.Subnet("192.168.5.0/26")
 
 		m.r.
 			On(
@@ -79,11 +81,11 @@ func TestService_AddIPToWhiteList(t *testing.T) {
 			).
 			Return(&antibrut.IPRule{
 				Type:   antibrut.WhiteList,
-				Subnet: "127.0.0.1/10",
+				Subnet: "192.168.5.0/26",
 			}, nil).
 			Once()
 
-		err := s.AddIPToWhiteList(context.Background(), "127.0.0.1/10")
+		err := s.AddIPToWhiteList(context.Background(), "192.168.5.0/26")
 		require.NoError(t, err)
 	})
 }
@@ -93,7 +95,7 @@ func TestService_DeleteIPFromWhiteList(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		ctx := context.Background()
-		subnet := antibrut.Subnet("127.0.0.1/10")
+		subnet := antibrut.Subnet("192.168.5.0/26")
 
 		s, m := newFakeService(t)
 
@@ -115,7 +117,7 @@ func TestService_DeleteIPFromWhiteList(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		ctx := context.Background()
-		subnet := antibrut.Subnet("127.0.0.1/10")
+		subnet := antibrut.Subnet("192.168.5.0/26")
 
 		gotErr := errors.New("foo bar")
 
@@ -144,7 +146,7 @@ func TestService_AddIPToBlackList(t *testing.T) {
 	t.Run("already exists", func(t *testing.T) {
 		s, m := newFakeService(t)
 
-		subnet := antibrut.Subnet("127.0.0.1/10")
+		subnet := antibrut.Subnet("192.168.5.0/26")
 
 		m.r.
 			On(
@@ -154,18 +156,18 @@ func TestService_AddIPToBlackList(t *testing.T) {
 			).
 			Return(&antibrut.IPRule{
 				Type:   antibrut.BlackList,
-				Subnet: "127.0.0.1/10",
+				Subnet: "192.168.5.0/26",
 			}, nil).
 			Once()
 
-		err := s.AddIPToBlackList(context.Background(), "127.0.0.1/10")
+		err := s.AddIPToBlackList(context.Background(), "192.168.5.0/26")
 		require.NoError(t, err)
 	})
 
 	t.Run("create", func(t *testing.T) {
 		s, m := newFakeService(t)
 
-		subnet := antibrut.Subnet("127.0.0.1/10")
+		subnet := antibrut.Subnet("192.168.5.0/26")
 
 		m.r.
 			On(
@@ -187,11 +189,11 @@ func TestService_AddIPToBlackList(t *testing.T) {
 			).
 			Return(&antibrut.IPRule{
 				Type:   antibrut.BlackList,
-				Subnet: "127.0.0.1/10",
+				Subnet: "192.168.5.0/26",
 			}, nil).
 			Once()
 
-		err := s.AddIPToBlackList(context.Background(), "127.0.0.1/10")
+		err := s.AddIPToBlackList(context.Background(), "192.168.5.0/26")
 		require.NoError(t, err)
 	})
 }
@@ -201,7 +203,7 @@ func TestService_DeleteIPFromBlackList(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		ctx := context.Background()
-		subnet := antibrut.Subnet("127.0.0.1/10")
+		subnet := antibrut.Subnet("192.168.5.0/26")
 
 		s, m := newFakeService(t)
 
@@ -223,7 +225,7 @@ func TestService_DeleteIPFromBlackList(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		ctx := context.Background()
-		subnet := antibrut.Subnet("127.0.0.1/10")
+		subnet := antibrut.Subnet("192.168.5.0/26")
 
 		gotErr := errors.New("foo bar")
 
@@ -313,7 +315,7 @@ func TestService_Work(t *testing.T) {
 				"Reset",
 				ctx,
 				antibrut.ResetFilter{
-					DateTo: clock.Now().Add(-d.ToDuration()),
+					CreatedAtTo: clock.Now().Add(-d.ToDuration()),
 				},
 			).
 			Return(nil).

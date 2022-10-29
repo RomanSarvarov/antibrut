@@ -35,8 +35,8 @@ type BucketFilter struct {
 	// Value это значение бакета.
 	Value string
 
-	// DateTo это максимальная дата создания.
-	DateTo clock.Time
+	// CreatedAtTo это максимальная дата создания.
+	CreatedAtTo clock.Time
 }
 
 // ResetFilter предоставляет структуру для сброса бакетов.

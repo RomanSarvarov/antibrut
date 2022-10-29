@@ -225,7 +225,7 @@ func (s *Service) work(ctx context.Context) error {
 	// Удалить неактуальные бакеты.
 	if s.pruneDuration.ToDuration() > 0 {
 		return s.rl.Reset(ctx, ResetFilter{
-			DateTo: clock.Now().Add(-s.pruneDuration.ToDuration()),
+			CreatedAtTo: clock.Now().Add(-s.pruneDuration.ToDuration()),
 		})
 	}
 	return nil

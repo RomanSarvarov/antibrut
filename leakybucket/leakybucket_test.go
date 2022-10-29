@@ -19,6 +19,8 @@ type mocks struct {
 }
 
 func newFakeService(t *testing.T) (*Service, mocks) {
+	t.Helper()
+
 	r := mock.NewRepository(t)
 	s := New(r)
 
@@ -37,7 +39,7 @@ func TestService_Reset(t *testing.T) {
 		filter := antibrut.ResetFilter{
 			LimitationCode: antibrut.LimitationCode("foo"),
 			Value:          "bar",
-			DateTo:         clock.NewFromTime(dt),
+			CreatedAtTo:    clock.NewFromTime(dt),
 		}
 
 		s, m := newFakeService(t)
@@ -62,7 +64,7 @@ func TestService_Reset(t *testing.T) {
 		filter := antibrut.ResetFilter{
 			LimitationCode: antibrut.LimitationCode("foo"),
 			Value:          "bar",
-			DateTo:         clock.NewFromTime(dt),
+			CreatedAtTo:    clock.NewFromTime(dt),
 		}
 		gotErr := errors.New("some error")
 

@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"embed"
+	"io"
 	"strings"
+	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
@@ -22,9 +24,13 @@ type Repository struct {
 	db database
 }
 
-// database содержит в себе методы для работы с БД.
-type database struct {
-	*sql.DB
+// database декларирует методы для работы с БД.
+type database interface {
+	io.Closer
+
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
 }
 
 // New создает и открывает подключение к БД.
@@ -51,7 +57,7 @@ func New(dsn string) (*Repository, error) {
 	}
 
 	s := &Repository{
-		db: database{DB: db},
+		db: db,
 	}
 
 	return s, nil
@@ -59,21 +65,32 @@ func New(dsn string) (*Repository, error) {
 
 // Close закрывает подключение к БД.
 func (r *Repository) Close() error {
-	if r.db.DB != nil {
+	if r.db != nil {
 		return r.db.Close()
 	}
 	return nil
 }
 
+// migrateMu мьютекст для миграций.
+// Goose использует глобальные объекты,
+// по-этому в тестах возникает race-condition.
+var migrateMu sync.Mutex
+
 // Migrate запускает миграции.
 func (r *Repository) Migrate() error {
+	migrateMu.Lock()
+	defer migrateMu.Unlock()
+
 	if err := goose.SetDialect("sqlite3"); err != nil {
 		return errors.Wrap(err, "migrate error")
 	}
 
 	goose.SetBaseFS(migrationsFS)
+	goose.SetLogger(goose.NopLogger())
 
-	if err := goose.Up(r.db.DB, "migrations"); err != nil {
+	db := r.db.(*sql.DB)
+
+	if err := goose.Up(db, "migrations"); err != nil {
 		return errors.Wrap(err, "migrate error")
 	}
 
@@ -164,8 +181,8 @@ func (r *Repository) DeleteBuckets(ctx context.Context, filter antibrut.BucketFi
 		where, args = append(where, "value = ?"), append(args, filter.Value)
 	}
 
-	if !filter.DateTo.IsZero() {
-		where, args = append(where, "created_at <= ?"), append(args, filter.DateTo)
+	if !filter.CreatedAtTo.IsZero() {
+		where, args = append(where, "created_at <= ?"), append(args, filter.CreatedAtTo)
 	}
 
 	result, err := r.db.ExecContext(ctx, `
@@ -283,6 +300,40 @@ func (r *Repository) FindIPRuleBySubnet(ctx context.Context, subnet antibrut.Sub
 	return &rule, nil
 }
 
+// FindIPRulesByIP находит совпадения antibrut.IPRule на основе IP адреса.
+func (r *Repository) FindIPRulesByIP(ctx context.Context, ip antibrut.IP) ([]*antibrut.IPRule, error) {
+	ipParts := strings.Split(ip.String(), ".")
+	ipWithoutLastOctet := strings.Join(ipParts[0:3], ".") + ".%"
+
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, type, subnet
+		FROM ip_rules
+		WHERE subnet LIKE ?
+	`, ipWithoutLastOctet)
+	if err != nil {
+		return nil, errors.Wrap(err, "find ip rules by ip error")
+	}
+	defer rows.Close()
+
+	rules := make([]*antibrut.IPRule, 0)
+	for rows.Next() {
+		var rule antibrut.IPRule
+		if err := rows.Scan(
+			&rule.ID,
+			&rule.Type,
+			&rule.Subnet,
+		); err != nil {
+			return nil, errors.Wrap(err, "find ip rules by ip error")
+		}
+		rules = append(rules, &rule)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "find ip rules by ip error")
+	}
+
+	return rules, nil
+}
+
 // CreateIPRule создает antibrut.IPRule.
 func (r *Repository) CreateIPRule(ctx context.Context, ipRule *antibrut.IPRule) (*antibrut.IPRule, error) {
 	result, err := r.db.ExecContext(ctx, `
@@ -359,38 +410,4 @@ func (r *Repository) DeleteIPRules(ctx context.Context, filter antibrut.IPRuleFi
 	}
 
 	return deletedCnt, nil
-}
-
-// FindIPRulesByIP находит совпадения antibrut.IPRule на основе IP адреса.
-func (r *Repository) FindIPRulesByIP(ctx context.Context, ip antibrut.IP) ([]*antibrut.IPRule, error) {
-	ipParts := strings.Split(ip.String(), ".")
-	ipWithoutLastOctet := strings.Join(ipParts[0:3], ".") + ".%"
-
-	rows, err := r.db.QueryContext(ctx, `
-		SELECT id, type, subnet
-		FROM ip_rules
-		WHERE subnet LIKE ?
-	`, ipWithoutLastOctet)
-	if err != nil {
-		return nil, errors.Wrap(err, "find ip rules by ip error")
-	}
-	defer rows.Close()
-
-	rules := make([]*antibrut.IPRule, 0)
-	for rows.Next() {
-		var rule antibrut.IPRule
-		if err := rows.Scan(
-			&rule.ID,
-			&rule.Type,
-			&rule.Subnet,
-		); err != nil {
-			return nil, errors.Wrap(err, "find ip rules by ip error")
-		}
-		rules = append(rules, &rule)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "find ip rules by ip error")
-	}
-
-	return rules, nil
 }

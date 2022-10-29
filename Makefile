@@ -6,9 +6,10 @@ run:
 generate:
 	go generate ./...
 
-lint:
+lint: go-lint proto-lint
+
+go-lint:
 	golangci-lint run ./...
-	make proto-lint
 
 proto-lint:
 	cd proto && go run github.com/bufbuild/buf/cmd/buf lint
