@@ -1,10 +1,15 @@
 version: '3'
+
+networks:
+  antibrut:
+    driver: bridge
+
 services:
   antibrut:
     build: .
     container_name: antibrut
     ports:
       - "9090:9090"
+    volumes:
+      - ./data:/app/data
     restart: always
-    command:
-      - run
