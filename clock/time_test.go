@@ -18,9 +18,7 @@ func TestResetTimeNowFunc(t *testing.T) {
 }
 
 func TestSetTimeNowFunc(t *testing.T) {
-	t.Cleanup(func() {
-		ResetTimeNowFunc()
-	})
+	t.Cleanup(func() { ResetTimeNowFunc() })
 
 	SetTimeNowFunc(func() time.Time {
 		return time.Time{}

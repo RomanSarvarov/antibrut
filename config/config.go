@@ -21,6 +21,10 @@ type Config struct {
 	// SQLiteConfig это настройки для БД SQLite.
 	SQLite SQLiteConfig
 
+	// RateLimiterStorageDriver драйвер для лимитинга.
+	// Возможные значения: sqlite, inmem.
+	RateLimiterStorageDriver string `env:"ANTIBRUT_RATE_LIMITER_DRIVER,notEmpty" envDefault:"inmem"`
+
 	// PruneDuration количество времени, после
 	// которого бакеты считаются устаревшими и удаляются.
 	// Если указать "0", то удаление неактуальных,

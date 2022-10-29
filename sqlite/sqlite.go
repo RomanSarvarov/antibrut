@@ -71,7 +71,7 @@ func (r *Repository) Close() error {
 	return nil
 }
 
-// migrateMu мьютекст для миграций.
+// migrateMu мьютекс для миграций.
 // Goose использует глобальные объекты,
 // по-этому в тестах возникает race-condition.
 var migrateMu sync.Mutex

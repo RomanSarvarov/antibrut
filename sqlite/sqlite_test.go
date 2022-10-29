@@ -286,9 +286,9 @@ func TestRepository_FindAttempts(t *testing.T) {
 			INSERT INTO limitations(code, max_attempts, interval_sec) 
 			VALUES('foo', 10, 60);
 			INSERT INTO buckets(id, limitation_code, value, created_at) 
-			VALUES (5, 'foo', '10', 0), (6, 'foo', '10', 0);
+			VALUES (5, 'foo', '10', 0), (10, 'foo', '10', 0);
 			INSERT INTO attempts(bucket_id, created_at) 
-			VALUES (5, '2022-05-01 12:00:00+00:00'), (6, '2022-05-01 13:00:00+00:00');
+			VALUES (5, '2022-05-01 12:00:00+00:00'), (10, '2022-05-01 13:00:00+00:00');
 		`)
 		require.NoError(t, err)
 

@@ -11,11 +11,11 @@ import (
 
 // Service предоставляет сервис для работы с Leaky Bucket алгоритмом.
 type Service struct {
-	repo repository
+	repo Repository
 }
 
-// repository декларирует нужные методы для работы с БД.
-type repository interface {
+// Repository декларирует нужные методы для работы с БД.
+type Repository interface {
 	// FindLimitation находит antibrut.Limitation.
 	// Если совпадений нет, вернет antibrut.ErrNotFound.
 	FindLimitation(ctx context.Context, c antibrut.LimitationCode) (*antibrut.Limitation, error)
@@ -38,7 +38,7 @@ type repository interface {
 }
 
 // New создает Service.
-func New(repo repository) *Service {
+func New(repo Repository) *Service {
 	return &Service{
 		repo: repo,
 	}
