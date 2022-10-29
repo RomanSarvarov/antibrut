@@ -1,49 +1,10 @@
 version: '3'
 services:
-  calendar:
-    container_name: calendar
-    build:
-      context: ../
-      dockerfile: ./build/calendar.Dockerfile
+  antibrut:
+    build: .
+    container_name: antibrut
     ports:
-      - "8080:8080"
-      - "8081:8081"
+      - "9090:9090"
     restart: always
-    depends_on:
-      - postgres
-      - kafka
-      - zookeeper
-    networks:
-      - calendar
     command:
-      - "--config=.env"
-
-  scheduler:
-    container_name: scheduler
-    build:
-      context: ../
-      dockerfile: ./build/scheduler.Dockerfile
-    restart: always
-    depends_on:
-      - postgres
-      - kafka
-      - zookeeper
-    networks:
-      - calendar
-    command:
-      - "--config=.env"
-
-  sender:
-    container_name: sender
-    build:
-      context: ../
-      dockerfile: ./build/sender.Dockerfile
-    restart: always
-    depends_on:
-      - postgres
-      - kafka
-      - zookeeper
-    networks:
-      - calendar
-    command:
-      - "--config=.env"
+      - run

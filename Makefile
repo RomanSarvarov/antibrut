@@ -1,7 +1,16 @@
 go_build_flags=-tags=sqlite_unlock_notify
 
-run:
-	go run ${go_build_flags} ./cmd/antibrut run
+init:
+	cp -n .env.example .env || true
+
+run: init
+	docker-compose up -d
+
+stop:
+	docker-compose stop
+
+tool:
+	docker-compose exec antibrut ./antibrut $(MAKECMDGOALS)
 
 build:
 	go build ${go_build_flags} -o ./bin/antibrut ./cmd/antibrut
@@ -19,3 +28,5 @@ proto-lint:
 
 test:
 	go test -race ./... -count 1
+
+PHONY: init run stop tool build generate lint go-lint proto-lint test
