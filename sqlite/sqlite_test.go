@@ -21,7 +21,7 @@ func newFakeRepository(t *testing.T) (*Repository, mocks) {
 	t.Helper()
 
 	db := mock.NewDatabase(t)
-	repo, err := New(":memory:")
+	repo, err := New(":memory:?_foreign_keys=on")
 	require.NoError(t, err)
 
 	repo.db = db
@@ -34,7 +34,7 @@ func newFakeRepository(t *testing.T) (*Repository, mocks) {
 func setupRepository(t *testing.T) (*Repository, *sql.DB) {
 	t.Helper()
 
-	repo, err := New(":memory:")
+	repo, err := New(":memory:?_foreign_keys=on")
 	require.NoError(t, err)
 
 	err = repo.Migrate()
