@@ -130,22 +130,22 @@ func serve(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// InMemLBRepository in-memory репозиторий для Leaky Bucket алгоритма.
+// inMemLBRepository in-memory репозиторий для Leaky Bucket алгоритма.
 // Все операции, кроме поиска antibrut.Limitation происходят в памяти.
-type InMemLBRepository struct {
+type inMemLBRepository struct {
 	db *sqlite.Repository
 	*inmem.Repository
 }
 
 // FindLimitation находит antibrut.Limitation.
 // Если совпадений нет, вернет antibrut.ErrNotFound.
-func (r *InMemLBRepository) FindLimitation(ctx context.Context, c antibrut.LimitationCode) (*antibrut.Limitation, error) {
+func (r *inMemLBRepository) FindLimitation(ctx context.Context, c antibrut.LimitationCode) (*antibrut.Limitation, error) {
 	return r.db.FindLimitation(ctx, c)
 }
 
-// buildInMemoryLBRepository создает InMemLBRepository.
+// buildInMemoryLBRepository создает inMemLBRepository.
 func buildInMemoryLBRepository(db *sqlite.Repository) leakybucket.Repository {
-	return &InMemLBRepository{
+	return &inMemLBRepository{
 		Repository: inmem.New(),
 		db:         db,
 	}
