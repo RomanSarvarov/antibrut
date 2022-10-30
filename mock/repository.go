@@ -105,13 +105,13 @@ func (_m *Repository) FindIPRulesByIP(ctx context.Context, ip antibrut.IP) ([]*a
 	return r0, r1
 }
 
-// UpdateIPRule provides a mock function with given fields: ctx, id, ipRule
-func (_m *Repository) UpdateIPRule(ctx context.Context, id antibrut.IPRuleID, ipRule *antibrut.IPRule) (*antibrut.IPRule, error) {
-	ret := _m.Called(ctx, id, ipRule)
+// UpdateIPRule provides a mock function with given fields: ctx, id, upd
+func (_m *Repository) UpdateIPRule(ctx context.Context, id antibrut.IPRuleID, upd *antibrut.IPRuleUpdate) (*antibrut.IPRule, error) {
+	ret := _m.Called(ctx, id, upd)
 
 	var r0 *antibrut.IPRule
-	if rf, ok := ret.Get(0).(func(context.Context, antibrut.IPRuleID, *antibrut.IPRule) *antibrut.IPRule); ok {
-		r0 = rf(ctx, id, ipRule)
+	if rf, ok := ret.Get(0).(func(context.Context, antibrut.IPRuleID, *antibrut.IPRuleUpdate) *antibrut.IPRule); ok {
+		r0 = rf(ctx, id, upd)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*antibrut.IPRule)
@@ -119,8 +119,8 @@ func (_m *Repository) UpdateIPRule(ctx context.Context, id antibrut.IPRuleID, ip
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, antibrut.IPRuleID, *antibrut.IPRule) error); ok {
-		r1 = rf(ctx, id, ipRule)
+	if rf, ok := ret.Get(1).(func(context.Context, antibrut.IPRuleID, *antibrut.IPRuleUpdate) error); ok {
+		r1 = rf(ctx, id, upd)
 	} else {
 		r1 = ret.Error(1)
 	}

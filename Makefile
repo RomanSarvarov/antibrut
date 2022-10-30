@@ -27,6 +27,6 @@ proto-lint:
 	cd proto && go run github.com/bufbuild/buf/cmd/buf lint
 
 test:
-	go test -race ./... -count 1
+	go test -race ./... -count 10
 
 PHONY: init run stop tool build generate lint go-lint proto-lint test

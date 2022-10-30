@@ -56,7 +56,7 @@ type repository interface {
 	CreateIPRule(ctx context.Context, ipRule *IPRule) (*IPRule, error)
 
 	// UpdateIPRule обновляет особое правило для IP адреса.
-	UpdateIPRule(ctx context.Context, id IPRuleID, ipRule *IPRule) (*IPRule, error)
+	UpdateIPRule(ctx context.Context, id IPRuleID, upd *IPRuleUpdate) (*IPRule, error)
 
 	// DeleteIPRules удаляет особые правила для IP адресов.
 	DeleteIPRules(ctx context.Context, filter IPRuleFilter) (int64, error)
@@ -251,7 +251,7 @@ func (s *Service) createOrUpdateIPRule(ctx context.Context, t IPRuleType, subnet
 	}
 
 	if rule.Type != t {
-		_, err = s.repo.UpdateIPRule(ctx, rule.ID, &IPRule{
+		_, err = s.repo.UpdateIPRule(ctx, rule.ID, &IPRuleUpdate{
 			Type:   t,
 			Subnet: subnet,
 		})

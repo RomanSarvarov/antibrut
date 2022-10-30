@@ -361,24 +361,26 @@ func (r *Repository) CreateIPRule(ctx context.Context, ipRule *antibrut.IPRule) 
 func (r *Repository) UpdateIPRule(
 	ctx context.Context,
 	id antibrut.IPRuleID,
-	ipRule *antibrut.IPRule,
+	upd *antibrut.IPRuleUpdate,
 ) (*antibrut.IPRule, error) {
 	_, err := r.db.ExecContext(ctx, `
 		UPDATE ip_rules 
 		SET type = ?, subnet = ?
 		WHERE id = ?
 	`,
-		ipRule.Type,
-		ipRule.Subnet,
+		upd.Type,
+		upd.Subnet,
 		id,
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "update ip rule error")
 	}
 
-	ipRule.ID = id
-
-	return ipRule, nil
+	return &antibrut.IPRule{
+		ID:     id,
+		Type:   upd.Type,
+		Subnet: upd.Subnet,
+	}, nil
 }
 
 // DeleteIPRules удаляет совпадения из antibrut.IPRule.

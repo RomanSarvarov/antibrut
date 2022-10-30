@@ -26,6 +26,15 @@ type IPRule struct {
 	Subnet Subnet
 }
 
+// IPRuleUpdate структура для обновления IPRule.
+type IPRuleUpdate struct {
+	// Type это тип особого правила.
+	Type IPRuleType
+
+	// Subnet это подсеть, на которую действует особое правило.
+	Subnet Subnet
+}
+
 // IsWhiteList имеет ли особое правило тип - "белый список"?
 func (r IPRule) IsWhiteList() bool {
 	return r.Type == WhiteList
