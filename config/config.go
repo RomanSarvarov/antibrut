@@ -1,11 +1,11 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/joho/godotenv"
-	"github.com/pkg/errors"
 
 	"github.com/romsar/antibrut/clock"
 )
@@ -57,12 +57,12 @@ func Load() (*Config, error) {
 	// Загрузим переменные среды из .env файла.
 	err := godotenv.Load(envFilePath)
 	if err != nil && !os.IsNotExist(err) {
-		return nil, errors.Wrapf(err, "load `%s` file error", envFilePath)
+		return nil, fmt.Errorf("load `%s` file error: %w", envFilePath, err)
 	}
 
 	// Заполним структуру env переменными.
 	if err := env.Parse(cfg); err != nil {
-		return nil, errors.Wrap(err, "env parse error")
+		return nil, fmt.Errorf("env parse error: %w", err)
 	}
 
 	return cfg, nil

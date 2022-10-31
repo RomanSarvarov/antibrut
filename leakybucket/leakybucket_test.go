@@ -85,8 +85,6 @@ func TestService_Reset(t *testing.T) {
 }
 
 func TestService_Check(t *testing.T) {
-	t.Parallel()
-
 	t.Run("no limitation found", func(t *testing.T) {
 		ctx := context.Background()
 

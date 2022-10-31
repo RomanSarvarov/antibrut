@@ -67,8 +67,6 @@ func TestRepository_FindBucket(t *testing.T) {
 }
 
 func TestRepository_CreateBucket(t *testing.T) {
-	t.Parallel()
-
 	t.Run("success", func(t *testing.T) {
 		ctx := context.Background()
 
@@ -263,8 +261,6 @@ func TestRepository_FindAttempts(t *testing.T) {
 }
 
 func TestRepository_CreateAttempt(t *testing.T) {
-	t.Parallel()
-
 	t.Run("success", func(t *testing.T) {
 		ctx := context.Background()
 

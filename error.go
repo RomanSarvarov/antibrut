@@ -1,6 +1,6 @@
 package antibrut
 
-import "github.com/pkg/errors"
+import "errors"
 
 // ErrNotFound это ошибка, которая говорит о том,
 // что искомый объект не найден.

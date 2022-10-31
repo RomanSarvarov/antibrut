@@ -29,4 +29,9 @@ proto-lint:
 test:
 	go test -race ./... -count 10
 
-PHONY: init run stop tool build generate lint go-lint proto-lint test
+integration_test:
+	go test -tags integration -count 1 -race ./integration_test/...
+
+tests: test integration_test
+
+.PHONY: init run stop tool build generate lint go-lint proto-lint test integration_test tests

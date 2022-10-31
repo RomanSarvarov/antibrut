@@ -6,10 +6,12 @@ networks:
 
 services:
   antibrut:
-    build: .
     container_name: antibrut
+    build: .
     ports:
       - "9090:9090"
     volumes:
       - ./data:/app/data
     restart: always
+    networks:
+      - antibrut

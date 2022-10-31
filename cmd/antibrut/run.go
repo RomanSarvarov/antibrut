@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 

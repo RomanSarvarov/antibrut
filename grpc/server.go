@@ -2,9 +2,9 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"net"
 
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 
 	"github.com/romsar/antibrut"
@@ -53,7 +53,7 @@ type service interface {
 func (s *Server) Start(addr string) error {
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
-		return errors.Wrap(err, "start grpc server error")
+		return fmt.Errorf("start grpc server error: %w", err)
 	}
 
 	s.server = grpc.NewServer()

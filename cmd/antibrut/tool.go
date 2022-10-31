@@ -1,7 +1,9 @@
 package main
 
 import (
-	"github.com/pkg/errors"
+	"errors"
+	"fmt"
+
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -99,7 +101,7 @@ func reset(cmd *cobra.Command, args []string) error {
 	// grpc
 	conn, err := grpc.Dial(cfg.GRPC.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return errors.Wrap(err, "ошибка подключения к серверу")
+		return fmt.Errorf("ошибка подключения к серверу: %w", err)
 	}
 	defer conn.Close()
 
@@ -112,7 +114,7 @@ func reset(cmd *cobra.Command, args []string) error {
 		Ip:    ip,
 	})
 	if err != nil {
-		return errors.Wrap(err, "произошла ошибка в процессе работы")
+		return fmt.Errorf("произошла ошибка в процессе работы: %w", err)
 	}
 
 	cmd.Println("успешно!")
@@ -135,7 +137,7 @@ func addIPToWhiteList(cmd *cobra.Command, args []string) error {
 	// grpc
 	conn, err := grpc.Dial(cfg.GRPC.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return errors.Wrap(err, "ошибка подключения к серверу")
+		return fmt.Errorf("ошибка подключения к серверу: %w", err)
 	}
 	defer conn.Close()
 
@@ -147,7 +149,7 @@ func addIPToWhiteList(cmd *cobra.Command, args []string) error {
 		Subnet: args[0],
 	})
 	if err != nil {
-		return errors.Wrap(err, "произошла ошибка в процессе работы")
+		return fmt.Errorf("произошла ошибка в процессе работы: %w", err)
 	}
 
 	cmd.Println("успешно!")
@@ -170,7 +172,7 @@ func deleteIPFromWhiteList(cmd *cobra.Command, args []string) error {
 	// grpc
 	conn, err := grpc.Dial(cfg.GRPC.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return errors.Wrap(err, "ошибка подключения к серверу")
+		return fmt.Errorf("ошибка подключения к серверу: %w", err)
 	}
 	defer conn.Close()
 
@@ -182,7 +184,7 @@ func deleteIPFromWhiteList(cmd *cobra.Command, args []string) error {
 		Subnet: args[0],
 	})
 	if err != nil {
-		return errors.Wrap(err, "произошла ошибка в процессе работы")
+		return fmt.Errorf("произошла ошибка в процессе работы: %w", err)
 	}
 
 	cmd.Println("успешно!")
@@ -205,7 +207,7 @@ func addIPToBlackList(cmd *cobra.Command, args []string) error {
 	// grpc
 	conn, err := grpc.Dial(cfg.GRPC.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return errors.Wrap(err, "ошибка подключения к серверу")
+		return fmt.Errorf("ошибка подключения к серверу: %w", err)
 	}
 	defer conn.Close()
 
@@ -217,7 +219,7 @@ func addIPToBlackList(cmd *cobra.Command, args []string) error {
 		Subnet: args[0],
 	})
 	if err != nil {
-		return errors.Wrap(err, "произошла ошибка в процессе работы")
+		return fmt.Errorf("произошла ошибка в процессе работы: %w", err)
 	}
 
 	cmd.Println("успешно!")
@@ -240,7 +242,7 @@ func deleteIPFromBlackList(cmd *cobra.Command, args []string) error {
 	// grpc
 	conn, err := grpc.Dial(cfg.GRPC.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return errors.Wrap(err, "ошибка подключения к серверу")
+		return fmt.Errorf("ошибка подключения к серверу: %w", err)
 	}
 	defer conn.Close()
 
@@ -252,7 +254,7 @@ func deleteIPFromBlackList(cmd *cobra.Command, args []string) error {
 		Subnet: args[0],
 	})
 	if err != nil {
-		return errors.Wrap(err, "произошла ошибка в процессе работы")
+		return fmt.Errorf("произошла ошибка в процессе работы: %w", err)
 	}
 
 	cmd.Println("успешно!")

@@ -4,12 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"embed"
+	"errors"
+	"fmt"
 	"io"
 	"strings"
 	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/pkg/errors"
 	"github.com/pressly/goose/v3"
 
 	"github.com/romsar/antibrut"
@@ -41,19 +42,19 @@ func New(dsn string) (*Repository, error) {
 
 	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot create database connection")
+		return nil, fmt.Errorf("cannot create database connection: %w", err)
 	}
 
 	if err := db.Ping(); err != nil {
-		return nil, errors.Wrap(err, "cannot ping database")
+		return nil, fmt.Errorf("cannot ping database: %w", err)
 	}
 
 	if _, err := db.Exec(`PRAGMA journal_mode = wal;`); err != nil {
-		return nil, errors.Wrap(err, "enable wal error")
+		return nil, fmt.Errorf("enable wal error: %w", err)
 	}
 
 	if _, err := db.Exec(`PRAGMA foreign_keys = ON;`); err != nil {
-		return nil, errors.Wrap(err, "foreign keys pragma error")
+		return nil, fmt.Errorf("foreign keys pragma error: %w", err)
 	}
 
 	s := &Repository{
@@ -82,7 +83,7 @@ func (r *Repository) Migrate() error {
 	defer migrateMu.Unlock()
 
 	if err := goose.SetDialect("sqlite3"); err != nil {
-		return errors.Wrap(err, "migrate error")
+		return fmt.Errorf("migrate error: %w", err)
 	}
 
 	goose.SetBaseFS(migrationsFS)
@@ -91,7 +92,7 @@ func (r *Repository) Migrate() error {
 	db := r.db.(*sql.DB)
 
 	if err := goose.Up(db, "migrations"); err != nil {
-		return errors.Wrap(err, "migrate error")
+		return fmt.Errorf("migrate error: %w", err)
 	}
 
 	return nil
@@ -112,7 +113,7 @@ func (r *Repository) FindLimitation(ctx context.Context, c antibrut.LimitationCo
 			err = antibrut.ErrNotFound
 		}
 
-		return nil, errors.Wrap(err, "find limitation error")
+		return nil, fmt.Errorf("find limitation error: %w", err)
 	}
 
 	return &limitation, nil
@@ -137,7 +138,7 @@ func (r *Repository) FindBucket(
 			err = antibrut.ErrNotFound
 		}
 
-		return nil, errors.Wrap(err, "find bucket error")
+		return nil, fmt.Errorf("find bucket error: %w", err)
 	}
 
 	return &bucket, nil
@@ -156,12 +157,12 @@ func (r *Repository) CreateBucket(ctx context.Context, bucket *antibrut.Bucket) 
 		bucket.CreatedAt,
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "create bucket error")
+		return nil, fmt.Errorf("create bucket error: %w", err)
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return nil, errors.Wrap(err, "create bucket error")
+		return nil, fmt.Errorf("create bucket error: %w", err)
 	}
 
 	bucket.ID = antibrut.BucketID(id)
@@ -193,12 +194,12 @@ func (r *Repository) DeleteBuckets(ctx context.Context, filter antibrut.BucketFi
 		args...,
 	)
 	if err != nil {
-		return 0, errors.Wrap(err, "delete buckets error")
+		return 0, fmt.Errorf("delete buckets error: %w", err)
 	}
 
 	deletedCnt, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "delete buckets error")
+		return 0, fmt.Errorf("delete buckets error: %w", err)
 	}
 
 	return deletedCnt, nil
@@ -231,7 +232,7 @@ func (r *Repository) FindAttempts(ctx context.Context, filter antibrut.AttemptFi
 		args...,
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "find attempts error")
+		return nil, fmt.Errorf("find attempts error: %w", err)
 	}
 	defer rows.Close()
 
@@ -243,12 +244,12 @@ func (r *Repository) FindAttempts(ctx context.Context, filter antibrut.AttemptFi
 			&attempt.BucketID,
 			&attempt.CreatedAt,
 		); err != nil {
-			return nil, errors.Wrap(err, "find attempts error")
+			return nil, fmt.Errorf("find attempts error: %w", err)
 		}
 		attempts = append(attempts, &attempt)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "find attempts error")
+		return nil, fmt.Errorf("find attempts error: %w", err)
 	}
 
 	return attempts, nil
@@ -266,12 +267,12 @@ func (r *Repository) CreateAttempt(ctx context.Context, attempt *antibrut.Attemp
 		attempt.CreatedAt,
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "create attempt error")
+		return nil, fmt.Errorf("create attempt error: %w", err)
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return nil, errors.Wrap(err, "create attempt error")
+		return nil, fmt.Errorf("create attempt error: %w", err)
 	}
 
 	attempt.ID = antibrut.AttemptID(id)
@@ -294,7 +295,7 @@ func (r *Repository) FindIPRuleBySubnet(ctx context.Context, subnet antibrut.Sub
 			err = antibrut.ErrNotFound
 		}
 
-		return nil, errors.Wrap(err, "find ip rule error")
+		return nil, fmt.Errorf("find ip rule error: %w", err)
 	}
 
 	return &rule, nil
@@ -311,7 +312,7 @@ func (r *Repository) FindIPRulesByIP(ctx context.Context, ip antibrut.IP) ([]*an
 		WHERE subnet LIKE ?
 	`, ipWithoutLastOctet)
 	if err != nil {
-		return nil, errors.Wrap(err, "find ip rules by ip error")
+		return nil, fmt.Errorf("find ip rules by ip error: %w", err)
 	}
 	defer rows.Close()
 
@@ -323,12 +324,12 @@ func (r *Repository) FindIPRulesByIP(ctx context.Context, ip antibrut.IP) ([]*an
 			&rule.Type,
 			&rule.Subnet,
 		); err != nil {
-			return nil, errors.Wrap(err, "find ip rules by ip error")
+			return nil, fmt.Errorf("find ip rules by ip error: %w", err)
 		}
 		rules = append(rules, &rule)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "find ip rules by ip error")
+		return nil, fmt.Errorf("find ip rules by ip error: %w", err)
 	}
 
 	return rules, nil
@@ -344,12 +345,12 @@ func (r *Repository) CreateIPRule(ctx context.Context, ipRule *antibrut.IPRule) 
 		ipRule.Subnet,
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "create ip rule error")
+		return nil, fmt.Errorf("create ip rule error: %w", err)
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return nil, errors.Wrap(err, "create ip rule error")
+		return nil, fmt.Errorf("create ip rule error: %w", err)
 	}
 
 	ipRule.ID = antibrut.IPRuleID(id)
@@ -373,7 +374,7 @@ func (r *Repository) UpdateIPRule(
 		id,
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "update ip rule error")
+		return nil, fmt.Errorf("update ip rule error: %w", err)
 	}
 
 	return &antibrut.IPRule{
@@ -403,12 +404,12 @@ func (r *Repository) DeleteIPRules(ctx context.Context, filter antibrut.IPRuleFi
 		args...,
 	)
 	if err != nil {
-		return 0, errors.Wrap(err, "delete ip rules by subnet error")
+		return 0, fmt.Errorf("delete ip rules by subnet error: %w", err)
 	}
 
 	deletedCnt, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "delete ip rules by subnet error")
+		return 0, fmt.Errorf("delete ip rules by subnet error: %w", err)
 	}
 
 	return deletedCnt, nil

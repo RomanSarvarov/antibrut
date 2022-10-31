@@ -2,10 +2,10 @@ package antibrut
 
 import (
 	"context"
+	"errors"
 	"net"
 	"time"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/romsar/antibrut/clock"

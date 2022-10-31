@@ -2,8 +2,7 @@ package leakybucket
 
 import (
 	"context"
-
-	"github.com/pkg/errors"
+	"errors"
 
 	"github.com/romsar/antibrut"
 	"github.com/romsar/antibrut/clock"
