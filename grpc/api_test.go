@@ -86,17 +86,10 @@ func (s *APISuite) TestCheck() {
 	s.Run("limit exceeded", func() {
 		check := func(req, good *proto.CheckRequest, max int) func() {
 			return func() {
-				f := func(req *proto.CheckRequest) (*proto.CheckResponse, error) {
-					return s.abClient.Check(s.ctx, req)
-				}
+				got := s.loopCheck(req)
+				s.Require().Equal(max, got)
 
-				for i := 0; i < max; i++ {
-					resp, err := f(req)
-					s.Require().NoError(err)
-					s.Require().True(resp.GetOk())
-				}
-
-				resp, err := f(req)
+				resp, err := s.abClient.Check(s.ctx, req)
 				s.Require().NoError(err)
 				s.Require().False(resp.GetOk())
 			}
@@ -117,30 +110,14 @@ func (s *APISuite) TestReset() {
 	s.Run("success", func() {
 		reset := func(checkReq *proto.CheckRequest, resetReq *proto.ResetRequest) func() {
 			return func() {
-				check := func() (*proto.CheckResponse, error) {
-					return s.abClient.Check(s.ctx, checkReq)
-				}
-
-				i := 0
-				for {
-					resp, err := check()
-					s.Require().NoError(err)
-
-					if resp.GetOk() == false {
-						break
-					}
-
-					i++
-
-					if i >= 10000 {
-						s.Fail("cannot reach max limit")
-					}
-				}
+				s.loopCheck(&proto.CheckRequest{
+					Ip: "192.168.5.15",
+				})
 
 				_, err := s.abClient.Reset(s.ctx, resetReq)
 				s.Require().NoError(err)
 
-				resp, err := check()
+				resp, err := s.abClient.Check(s.ctx, checkReq)
 				s.Require().NoError(err)
 				s.Require().True(resp.GetOk())
 			}
@@ -171,27 +148,9 @@ func (s *APISuite) TestReset() {
 
 func (s *APISuite) TestAddIPToWhiteList() {
 	s.Run("success", func() {
-		check := func(req *proto.CheckRequest) (*proto.CheckResponse, error) {
-			return s.abClient.Check(s.ctx, req)
-		}
-
-		i := 0
-		for {
-			resp, err := check(&proto.CheckRequest{
-				Ip: "192.168.5.15",
-			})
-			s.Require().NoError(err)
-
-			if resp.GetOk() == false {
-				break
-			}
-
-			i++
-
-			if i >= 10000 {
-				s.Fail("cannot reach max limit")
-			}
-		}
+		s.loopCheck(&proto.CheckRequest{
+			Ip: "192.168.5.15",
+		})
 
 		// wrong subnet
 		_, err := s.abClient.AddIPToWhiteList(s.ctx, &proto.AddIPToWhiteListRequest{
@@ -199,7 +158,7 @@ func (s *APISuite) TestAddIPToWhiteList() {
 		})
 		s.Require().NoError(err)
 
-		resp, err := check(&proto.CheckRequest{
+		resp, err := s.abClient.Check(s.ctx, &proto.CheckRequest{
 			Ip: "192.168.5.15",
 		})
 		s.Require().NoError(err)
@@ -211,7 +170,7 @@ func (s *APISuite) TestAddIPToWhiteList() {
 		})
 		s.Require().NoError(err)
 
-		resp, err = check(&proto.CheckRequest{
+		resp, err = s.abClient.Check(s.ctx, &proto.CheckRequest{
 			Ip: "192.168.5.15",
 		})
 		s.Require().NoError(err)
@@ -223,4 +182,25 @@ func (s *APISuite) TestAddIPToWhiteList() {
 		_, err := s.abClient.AddIPToWhiteList(s.ctx, &proto.AddIPToWhiteListRequest{})
 		s.Require().Equal(codes.InvalidArgument, status.Code(err))
 	})
+}
+
+func (s *APISuite) loopCheck(req *proto.CheckRequest) int {
+	i := 0
+
+	for {
+		resp, err := s.abClient.Check(s.ctx, req)
+		s.Require().NoError(err)
+
+		if resp.GetOk() == false {
+			break
+		}
+
+		i++
+
+		if i > 5000 {
+			s.Fail("Cannot reach max limit")
+		}
+	}
+
+	return i
 }
