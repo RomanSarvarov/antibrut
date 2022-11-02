@@ -65,6 +65,8 @@ func serve(cmd *cobra.Command, args []string) error {
 		if err := db.Migrate(); err != nil {
 			return err
 		}
+
+		cmd.Println("Migrations done")
 	}
 
 	var lbRepo leakybucket.Repository
