@@ -4,12 +4,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/romsar/antibrut/config"
+	proto "github.com/romsar/antibrut/proto/antibrut/v1"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-
-	"github.com/romsar/antibrut/config"
-	proto "github.com/romsar/antibrut/proto/antibrut/v1"
 )
 
 var (

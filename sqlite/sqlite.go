@@ -10,9 +10,8 @@ import (
 	"strings"
 	"sync"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3" // драйвер для работы пакеты database/sql с sqlite3.
 	"github.com/pressly/goose/v3"
-
 	"github.com/romsar/antibrut"
 	"github.com/romsar/antibrut/clock"
 )

@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	proto "github.com/romsar/antibrut/proto/antibrut/v1"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -13,8 +14,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
-
-	proto "github.com/romsar/antibrut/proto/antibrut/v1"
 )
 
 type APISuite struct {
@@ -51,7 +50,6 @@ func (s *APISuite) SetupTest() {
 			wait.ForLog("Migrations done"),
 			wait.ForExposedPort(),
 		),
-		Name: "testantibrut",
 	}
 
 	var err error
@@ -74,8 +72,10 @@ func (s *APISuite) SetupTest() {
 }
 
 func (s *APISuite) TearDownTest() {
-	err := s.dockerContainer.Terminate(context.Background())
-	s.NoError(err)
+	if s.dockerContainer != nil {
+		err := s.dockerContainer.Terminate(context.Background())
+		s.NoError(err)
+	}
 }
 
 func (s *APISuite) TestCheck() {

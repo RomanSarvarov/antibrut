@@ -5,16 +5,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/romsar/antibrut"
 	"github.com/romsar/antibrut/clock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRepository_FindBucket(t *testing.T) {
 	t.Parallel()
 
 	t.Run("not found by limit code", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo := New()
@@ -25,6 +26,8 @@ func TestRepository_FindBucket(t *testing.T) {
 	})
 
 	t.Run("not found by limit code and value", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo := New()
@@ -41,6 +44,8 @@ func TestRepository_FindBucket(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		tm := clock.NewFromTime(time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC))
@@ -96,10 +101,13 @@ func TestRepository_CreateBucket(t *testing.T) {
 		require.Equal(t, antibrut.BucketID(5), repo.lastBucketID)
 	})
 }
+
 func TestRepository_DeleteBuckets(t *testing.T) {
 	t.Parallel()
 
 	t.Run("delete by limitation code", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo := New()
@@ -130,6 +138,8 @@ func TestRepository_DeleteBuckets(t *testing.T) {
 	})
 
 	t.Run("delete by value", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo := New()
@@ -157,6 +167,8 @@ func TestRepository_DeleteBuckets(t *testing.T) {
 	})
 
 	t.Run("delete by created at to", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo := New()
@@ -187,7 +199,11 @@ func TestRepository_DeleteBuckets(t *testing.T) {
 }
 
 func TestRepository_FindAttempts(t *testing.T) {
+	t.Parallel()
+
 	t.Run("find by bucket id", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo := New()
@@ -212,6 +228,8 @@ func TestRepository_FindAttempts(t *testing.T) {
 	})
 
 	t.Run("find by created at from", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo := New()
@@ -236,6 +254,8 @@ func TestRepository_FindAttempts(t *testing.T) {
 	})
 
 	t.Run("find by created at to", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo := New()

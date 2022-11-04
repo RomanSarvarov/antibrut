@@ -7,12 +7,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	rootCmd = &cobra.Command{
-		Use:   "antibrut",
-		Short: "Инструмент командной строки и сервер для успокоения запросов.",
-	}
-)
+var rootCmd = &cobra.Command{
+	Use:   "antibrut",
+	Short: "Инструмент командной строки и сервер для успокоения запросов.",
+}
 
 func main() {
 	if err := rootCmd.Execute(); err != nil {

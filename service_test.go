@@ -6,12 +6,11 @@ import (
 	"testing"
 	"time"
 
-	mockery "github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
-
 	"github.com/romsar/antibrut"
 	"github.com/romsar/antibrut/clock"
 	"github.com/romsar/antibrut/mock"
+	mockery "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type mocks struct {
@@ -32,10 +31,13 @@ func newFakeService(t *testing.T, opts ...antibrut.Option) (*antibrut.Service, m
 	}
 }
 
+//nolint:dupl
 func TestService_AddIPToWhiteList(t *testing.T) {
 	t.Parallel()
 
 	t.Run("already exists", func(t *testing.T) {
+		t.Parallel()
+
 		s, m := newFakeService(t)
 
 		subnet := antibrut.Subnet("192.168.5.0/26")
@@ -57,6 +59,8 @@ func TestService_AddIPToWhiteList(t *testing.T) {
 	})
 
 	t.Run("create", func(t *testing.T) {
+		t.Parallel()
+
 		s, m := newFakeService(t)
 
 		subnet := antibrut.Subnet("192.168.5.0/26")
@@ -94,6 +98,8 @@ func TestService_DeleteIPFromWhiteList(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 		subnet := antibrut.Subnet("192.168.5.0/26")
 
@@ -116,6 +122,8 @@ func TestService_DeleteIPFromWhiteList(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 		subnet := antibrut.Subnet("192.168.5.0/26")
 
@@ -140,10 +148,13 @@ func TestService_DeleteIPFromWhiteList(t *testing.T) {
 	})
 }
 
+//nolint:dupl
 func TestService_AddIPToBlackList(t *testing.T) {
 	t.Parallel()
 
 	t.Run("already exists", func(t *testing.T) {
+		t.Parallel()
+
 		s, m := newFakeService(t)
 
 		subnet := antibrut.Subnet("192.168.5.0/26")
@@ -165,6 +176,8 @@ func TestService_AddIPToBlackList(t *testing.T) {
 	})
 
 	t.Run("create", func(t *testing.T) {
+		t.Parallel()
+
 		s, m := newFakeService(t)
 
 		subnet := antibrut.Subnet("192.168.5.0/26")
@@ -202,6 +215,8 @@ func TestService_DeleteIPFromBlackList(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 		subnet := antibrut.Subnet("192.168.5.0/26")
 
@@ -273,12 +288,16 @@ func TestSubnet_Contains(t *testing.T) {
 	t.Parallel()
 
 	t.Run("positive", func(t *testing.T) {
+		t.Parallel()
+
 		c, err := antibrut.Subnet("192.168.5.0/26").Contains("192.168.5.15")
 		require.NoError(t, err)
 		require.True(t, c)
 	})
 
 	t.Run("negative", func(t *testing.T) {
+		t.Parallel()
+
 		c, err := antibrut.Subnet("192.168.5.0/26").Contains("192.168.6.15")
 		require.NoError(t, err)
 		require.False(t, c)
@@ -337,6 +356,8 @@ func TestService_Reset(t *testing.T) {
 	t.Parallel()
 
 	t.Run("login success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		login := antibrut.Login("foobar")
@@ -360,6 +381,8 @@ func TestService_Reset(t *testing.T) {
 	})
 
 	t.Run("login error", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		login := antibrut.Login("foobar")
@@ -384,6 +407,8 @@ func TestService_Reset(t *testing.T) {
 	})
 
 	t.Run("ip success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		ip := antibrut.IP("foobar")
@@ -411,10 +436,11 @@ func TestService_Check(t *testing.T) {
 	t.Parallel()
 
 	t.Run("login success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		login := antibrut.Login("foobar")
-
 		s, m := newFakeService(t)
 
 		m.rl.
@@ -432,11 +458,12 @@ func TestService_Check(t *testing.T) {
 	})
 
 	t.Run("login error", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		login := antibrut.Login("foobar")
 		gotErr := errors.New("some error")
-
 		s, m := newFakeService(t)
 
 		m.rl.
@@ -454,10 +481,11 @@ func TestService_Check(t *testing.T) {
 	})
 
 	t.Run("password success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		password := antibrut.Password("foobar")
-
 		s, m := newFakeService(t)
 
 		m.rl.
@@ -475,10 +503,10 @@ func TestService_Check(t *testing.T) {
 	})
 
 	t.Run("ip success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
-
 		ip := antibrut.IP("192.168.5.15")
-
 		s, m := newFakeService(t)
 
 		m.r.
@@ -505,10 +533,10 @@ func TestService_Check(t *testing.T) {
 	})
 
 	t.Run("ip with white list", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
-
 		ip := antibrut.IP("192.168.5.15")
-
 		s, m := newFakeService(t)
 
 		m.r.
@@ -528,10 +556,10 @@ func TestService_Check(t *testing.T) {
 	})
 
 	t.Run("ip with black list", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
-
 		ip := antibrut.IP("192.168.5.15")
-
 		s, m := newFakeService(t)
 
 		m.r.

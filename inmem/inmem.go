@@ -68,7 +68,7 @@ func (r *Repository) CreateBucket(_ context.Context, bucket *antibrut.Bucket) (*
 
 	bucket.ID = r.lastBucketID + 1
 	bucket.CreatedAt = clock.Now()
-	
+
 	r.buckets[bucket.LimitationCode] = append(r.buckets[bucket.LimitationCode], bucket)
 
 	r.lastBucketID = bucket.ID

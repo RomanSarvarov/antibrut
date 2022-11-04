@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"net"
 
-	"google.golang.org/grpc"
-
 	"github.com/romsar/antibrut"
 	proto "github.com/romsar/antibrut/proto/antibrut/v1"
+	"google.golang.org/grpc"
 )
 
 // Server предоставляет структура GRPC сервера.

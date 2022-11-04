@@ -10,6 +10,8 @@ RUN go mod download
 
 COPY . .
 
+RUN touch .env # fallback
+
 ENV CGO_ENABLED=1
 
 RUN go build -tags=sqlite_unlock_notify -o ./bin/antibrut ./cmd/antibrut

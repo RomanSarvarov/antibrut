@@ -6,7 +6,6 @@ import (
 	context "context"
 
 	antibrut "github.com/romsar/antibrut"
-
 	mock "github.com/stretchr/testify/mock"
 )
 

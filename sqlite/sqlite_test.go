@@ -6,11 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/romsar/antibrut"
 	"github.com/romsar/antibrut/clock"
-	mock "github.com/romsar/antibrut/mock/sqlite"
+	mock "github.com/romsar/antibrut/mock/sqlite" // sqlite mock
+	"github.com/stretchr/testify/require"
 )
 
 type mocks struct {
@@ -54,6 +53,8 @@ func TestRepository_FindLimitation(t *testing.T) {
 	t.Parallel()
 
 	t.Run("not found", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, _ := setupRepository(t)
@@ -64,6 +65,8 @@ func TestRepository_FindLimitation(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
@@ -90,6 +93,8 @@ func TestRepository_FindBucket(t *testing.T) {
 	t.Parallel()
 
 	t.Run("not found", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, _ := setupRepository(t)
@@ -100,6 +105,8 @@ func TestRepository_FindBucket(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
@@ -134,6 +141,8 @@ func TestRepository_CreateBucket(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
@@ -173,6 +182,8 @@ func TestRepository_DeleteBuckets(t *testing.T) {
 	t.Parallel()
 
 	t.Run("delete by limitation code", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
@@ -204,6 +215,8 @@ func TestRepository_DeleteBuckets(t *testing.T) {
 	})
 
 	t.Run("delete by value", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
@@ -235,6 +248,8 @@ func TestRepository_DeleteBuckets(t *testing.T) {
 	})
 
 	t.Run("delete by created at to", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
@@ -269,7 +284,11 @@ func TestRepository_DeleteBuckets(t *testing.T) {
 }
 
 func TestRepository_FindAttempts(t *testing.T) {
+	t.Parallel()
+
 	t.Run("find by bucket id", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
@@ -299,6 +318,8 @@ func TestRepository_FindAttempts(t *testing.T) {
 	})
 
 	t.Run("find by created at from", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
@@ -328,6 +349,8 @@ func TestRepository_FindAttempts(t *testing.T) {
 	})
 
 	t.Run("find by created at to", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
@@ -361,6 +384,8 @@ func TestRepository_CreateAttempt(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
@@ -400,6 +425,8 @@ func TestRepository_FindIPRuleBySubnet(t *testing.T) {
 	t.Parallel()
 
 	t.Run("not found", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, _ := setupRepository(t)
@@ -410,6 +437,8 @@ func TestRepository_FindIPRuleBySubnet(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
@@ -437,6 +466,8 @@ func TestRepository_FindIPRulesByIP(t *testing.T) {
 	t.Parallel()
 
 	t.Run("not found", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, _ := setupRepository(t)
@@ -447,6 +478,8 @@ func TestRepository_FindIPRulesByIP(t *testing.T) {
 	})
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
@@ -474,6 +507,8 @@ func TestRepository_CreateIPRule(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
@@ -503,6 +538,8 @@ func TestRepository_UpdateIPRule(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
@@ -544,6 +581,8 @@ func TestRepository_DeleteIPRules(t *testing.T) {
 	t.Parallel()
 
 	t.Run("delete by type", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)

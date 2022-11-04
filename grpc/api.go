@@ -4,12 +4,11 @@ import (
 	"context"
 	"errors"
 
+	"github.com/romsar/antibrut"
+	proto "github.com/romsar/antibrut/proto/antibrut/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-
-	"github.com/romsar/antibrut"
-	proto "github.com/romsar/antibrut/proto/antibrut/v1"
 )
 
 // Check проверяет "хороший" ли запрос, или его следует отклонить.
@@ -24,7 +23,6 @@ func (s *Server) Check(ctx context.Context, req *proto.CheckRequest) (*proto.Che
 		antibrut.Password(req.GetPassword()),
 		antibrut.IP(req.GetIp()),
 	)
-
 	if err != nil {
 		if errors.Is(err, antibrut.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, err.Error())
@@ -80,7 +78,10 @@ func (s *Server) AddIPToWhiteList(ctx context.Context, req *proto.AddIPToWhiteLi
 }
 
 // DeleteIPFromWhiteList удаляет IP адрес из белого списка.
-func (s *Server) DeleteIPFromWhiteList(ctx context.Context, req *proto.DeleteIPFromWhiteListRequest) (*emptypb.Empty, error) {
+func (s *Server) DeleteIPFromWhiteList(
+	ctx context.Context,
+	req *proto.DeleteIPFromWhiteListRequest,
+) (*emptypb.Empty, error) {
 	if req.GetSubnet() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no subnet passed")
 	}
@@ -114,7 +115,10 @@ func (s *Server) AddIPToBlackList(ctx context.Context, req *proto.AddIPToBlackLi
 }
 
 // DeleteIPFromBlackList удаляет IP адрес из чёрного списка.
-func (s *Server) DeleteIPFromBlackList(ctx context.Context, req *proto.DeleteIPFromBlackListRequest) (*emptypb.Empty, error) {
+func (s *Server) DeleteIPFromBlackList(
+	ctx context.Context,
+	req *proto.DeleteIPFromBlackListRequest,
+) (*emptypb.Empty, error) {
 	if req.GetSubnet() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no subnet passed")
 	}

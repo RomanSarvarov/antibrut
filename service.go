@@ -6,9 +6,8 @@ import (
 	"net"
 	"time"
 
-	"golang.org/x/sync/errgroup"
-
 	"github.com/romsar/antibrut/clock"
+	"golang.org/x/sync/errgroup"
 )
 
 // ErrMaxAttemptsExceeded это ошибка, которая говорит о том,
@@ -271,7 +270,7 @@ func (s *Service) checkWhiteBlackList(ctx context.Context, ip IP) (wl bool, bl b
 
 	rules, err := s.repo.FindIPRulesByIP(ctx, ip)
 	if err != nil {
-		return false, false, nil
+		return false, false, err
 	}
 
 	for _, rule := range rules {

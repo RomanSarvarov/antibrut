@@ -7,16 +7,14 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/spf13/cobra"
-	"golang.org/x/sync/errgroup"
-
 	"github.com/romsar/antibrut"
 	"github.com/romsar/antibrut/config"
+	localgrpc "github.com/romsar/antibrut/grpc"
 	"github.com/romsar/antibrut/inmem"
 	"github.com/romsar/antibrut/leakybucket"
 	"github.com/romsar/antibrut/sqlite"
-
-	localgrpc "github.com/romsar/antibrut/grpc"
+	"github.com/spf13/cobra"
+	"golang.org/x/sync/errgroup"
 )
 
 var runCmd = &cobra.Command{
@@ -141,7 +139,10 @@ type inMemLBRepository struct {
 
 // FindLimitation находит antibrut.Limitation.
 // Если совпадений нет, вернет antibrut.ErrNotFound.
-func (r *inMemLBRepository) FindLimitation(ctx context.Context, c antibrut.LimitationCode) (*antibrut.Limitation, error) {
+func (r *inMemLBRepository) FindLimitation(
+	ctx context.Context,
+	c antibrut.LimitationCode,
+) (*antibrut.Limitation, error) {
 	return r.db.FindLimitation(ctx, c)
 }
 
