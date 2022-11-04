@@ -22,7 +22,8 @@ type APISuite struct {
 	ctx context.Context
 
 	dockerContainer testcontainers.Container
-	grpcConn        *grpc.ClientConn
+
+	grpcConn *grpc.ClientConn
 
 	abClient proto.AntiBrutServiceClient
 }
@@ -31,7 +32,7 @@ func TestAPISuite(t *testing.T) {
 	suite.Run(t, new(APISuite))
 }
 
-func (s *APISuite) SetupTest() {
+func (s *APISuite) SetupSuite() {
 	s.ctx = context.Background()
 
 	req := testcontainers.ContainerRequest{
@@ -55,23 +56,35 @@ func (s *APISuite) SetupTest() {
 	var err error
 	s.dockerContainer, err = testcontainers.GenericContainer(s.ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
-		Started:          true,
+		Started:          false,
 	})
 	s.Require().NoError(err)
+}
 
-	ip, err := s.dockerContainer.Host(s.ctx)
+func (s *APISuite) SetupTest() {
+	err := s.dockerContainer.Start(s.ctx)
+	s.Require().NoError(err)
+
+	host, err := s.dockerContainer.Host(s.ctx)
 	s.Require().NoError(err)
 
 	port, err := s.dockerContainer.MappedPort(s.ctx, "9090")
 	s.Require().NoError(err)
 
-	s.grpcConn, err = grpc.Dial(ip+":"+port.Port(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	s.grpcConn, err = grpc.Dial(host+":"+port.Port(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	s.Require().NoError(err)
 
 	s.abClient = proto.NewAntiBrutServiceClient(s.grpcConn)
 }
 
 func (s *APISuite) TearDownTest() {
+	if s.dockerContainer != nil {
+		err := s.dockerContainer.Stop(context.Background(), nil)
+		s.NoError(err)
+	}
+}
+
+func (s *APISuite) TearDownSuite() {
 	if s.dockerContainer != nil {
 		err := s.dockerContainer.Terminate(context.Background())
 		s.NoError(err)
