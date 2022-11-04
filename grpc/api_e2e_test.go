@@ -1,3 +1,5 @@
+//go:build integration
+
 package grpc_test
 
 import (
@@ -28,12 +30,6 @@ type APISuite struct {
 
 func TestAPISuite(t *testing.T) {
 	suite.Run(t, new(APISuite))
-}
-
-func (s *APISuite) SetupSuite() {
-	if testing.Short() {
-		s.T().Skip("skipping e2e test")
-	}
 }
 
 func (s *APISuite) SetupTest() {
@@ -180,6 +176,123 @@ func (s *APISuite) TestAddIPToWhiteList() {
 
 	s.Run("no data passed", func() {
 		_, err := s.abClient.AddIPToWhiteList(s.ctx, &proto.AddIPToWhiteListRequest{})
+		s.Require().Equal(codes.InvalidArgument, status.Code(err))
+	})
+}
+
+func (s *APISuite) TestDeleteIPFromWhiteList() {
+	s.Run("success", func() {
+		s.loopCheck(&proto.CheckRequest{
+			Ip: "192.168.5.15",
+		})
+
+		// добавим подсеть в белый список
+		_, err := s.abClient.AddIPToWhiteList(s.ctx, &proto.AddIPToWhiteListRequest{
+			Subnet: "192.168.5.0/26",
+		})
+		s.Require().NoError(err)
+
+		// wrong subnet
+		_, err = s.abClient.DeleteIPFromWhiteList(s.ctx, &proto.DeleteIPFromWhiteListRequest{
+			Subnet: "192.168.6.0/26",
+		})
+		s.Require().NoError(err)
+
+		resp, err := s.abClient.Check(s.ctx, &proto.CheckRequest{
+			Ip: "192.168.5.15",
+		})
+		s.Require().NoError(err)
+		s.Require().True(resp.GetOk())
+
+		// needle subnet
+		_, err = s.abClient.DeleteIPFromWhiteList(s.ctx, &proto.DeleteIPFromWhiteListRequest{
+			Subnet: "192.168.5.0/26",
+		})
+		s.Require().NoError(err)
+
+		resp, err = s.abClient.Check(s.ctx, &proto.CheckRequest{
+			Ip: "192.168.5.15",
+		})
+		s.Require().NoError(err)
+		s.Require().False(resp.GetOk())
+
+	})
+
+	s.Run("no data passed", func() {
+		_, err := s.abClient.DeleteIPFromWhiteList(s.ctx, &proto.DeleteIPFromWhiteListRequest{})
+		s.Require().Equal(codes.InvalidArgument, status.Code(err))
+	})
+}
+
+func (s *APISuite) TestAddIPToBlackList() {
+	s.Run("success", func() {
+		// wrong subnet
+		_, err := s.abClient.AddIPToBlackList(s.ctx, &proto.AddIPToBlackListRequest{
+			Subnet: "192.168.6.0/26",
+		})
+		s.Require().NoError(err)
+
+		resp, err := s.abClient.Check(s.ctx, &proto.CheckRequest{
+			Ip: "192.168.5.15",
+		})
+		s.Require().NoError(err)
+		s.Require().True(resp.GetOk())
+
+		// needle subnet
+		_, err = s.abClient.AddIPToBlackList(s.ctx, &proto.AddIPToBlackListRequest{
+			Subnet: "192.168.5.0/26",
+		})
+		s.Require().NoError(err)
+
+		resp, err = s.abClient.Check(s.ctx, &proto.CheckRequest{
+			Ip: "192.168.5.15",
+		})
+		s.Require().NoError(err)
+		s.Require().False(resp.GetOk())
+	})
+
+	s.Run("no data passed", func() {
+		_, err := s.abClient.AddIPToBlackList(s.ctx, &proto.AddIPToBlackListRequest{})
+		s.Require().Equal(codes.InvalidArgument, status.Code(err))
+	})
+}
+
+func (s *APISuite) TestDeleteIPFromBlackList() {
+	s.Run("success", func() {
+		// добавим подсеть в черный список
+		_, err := s.abClient.AddIPToBlackList(s.ctx, &proto.AddIPToBlackListRequest{
+			Subnet: "192.168.5.0/26",
+		})
+		s.Require().NoError(err)
+
+		// wrong subnet
+		_, err = s.abClient.DeleteIPFromBlackList(s.ctx, &proto.DeleteIPFromBlackListRequest{
+			Subnet: "192.168.6.0/26",
+		})
+		s.Require().NoError(err)
+
+		resp, err := s.abClient.Check(s.ctx, &proto.CheckRequest{
+			Ip: "192.168.5.15",
+		})
+		s.Require().NoError(err)
+		s.Require().False(resp.GetOk())
+
+		// needle subnet
+		_, err = s.abClient.DeleteIPFromBlackList(s.ctx, &proto.DeleteIPFromBlackListRequest{
+			Subnet: "192.168.5.0/26",
+		})
+		s.Require().NoError(err)
+
+		resp, err = s.abClient.Check(s.ctx, &proto.CheckRequest{
+			Ip: "192.168.5.15",
+		})
+		s.Require().NoError(err)
+		s.Require().True(resp.GetOk())
+
+	})
+
+	s.Run("no data passed", func() {
+		_, err := s.abClient.DeleteIPFromBlackList(s.ctx, &proto.DeleteIPFromBlackListRequest{})
 		s.Require().Equal(codes.InvalidArgument, status.Code(err))
 	})
 }

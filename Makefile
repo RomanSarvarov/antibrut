@@ -29,7 +29,12 @@ proto-lint:
 test:
 	go test -race -count 1 ./...
 
-testshort:
-	go test -race -short -count 1 ./...
+supertest:
+	go test -race -count 10 ./...
 
-.PHONY: init run stop tool build generate lint go-lint proto-lint test testshort
+integration-test:
+	go test -race -tags integration -count 1 ./...
+
+tests: supertest integration-test
+
+.PHONY: init run stop tool build generate lint go-lint proto-lint test supertest integration-test tests testshort
