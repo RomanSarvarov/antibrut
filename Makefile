@@ -3,8 +3,11 @@ go_build_flags=-tags=sqlite_unlock_notify
 init:
 	cp -n .env.example .env || true
 
+build:
+	docker-compose build
+
 run: init
-	docker-compose up -d --build
+	docker-compose up -d
 
 stop:
 	docker-compose stop
@@ -12,7 +15,7 @@ stop:
 tool:
 	docker-compose exec antibrut ./antibrut $(MAKECMDGOALS)
 
-build:
+compile:
 	go build ${go_build_flags} -o ./bin/antibrut ./cmd/antibrut
 
 generate:
@@ -37,4 +40,4 @@ integration-test:
 
 tests: supertest integration-test
 
-.PHONY: init run stop tool build generate lint go-lint proto-lint test supertest integration-test tests testshort
+.PHONY: init run stop tool build generate compile lint go-lint proto-lint test supertest integration-test tests testshort
