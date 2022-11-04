@@ -9,7 +9,7 @@ on:
 
 jobs:
 
-  lint:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -18,23 +18,17 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.19
+          cache: true
 
       - name: Lint
         uses: golangci/golangci-lint-action@v3
-
-  test:
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.19
 
       - name: Unit tests
         run: go test -race -count 100 ./...
 
       - name: Integration & E2E tests
         run: go test -tags integration -race -count 1 ./...
+
+      - name: Build
+        run: go build -tags=sqlite_unlock_notify -o ./bin/antibrut ./cmd/antibrut
+
