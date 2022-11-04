@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/romsar/antibrut"
-	"github.com/romsar/antibrut/clock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -48,7 +47,7 @@ func TestRepository_FindBucket(t *testing.T) {
 
 		ctx := context.Background()
 
-		tm := clock.NewFromTime(time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC))
+		tm := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
 
 		wantBucket := &antibrut.Bucket{
 			LimitationCode: "foo",
@@ -75,14 +74,10 @@ func TestRepository_CreateBucket(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		ctx := context.Background()
 
-		repo := New()
+		repo := New(WithTimeNow(func() time.Time {
+			return time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
+		}))
 		repo.lastBucketID = 4
-
-		now := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
-		clock.SetTimeNowFunc(func() time.Time {
-			return now
-		})
-		t.Cleanup(func() { clock.ResetTimeNowFunc() })
 
 		wantBucket := &antibrut.Bucket{
 			LimitationCode: "foo",
@@ -284,14 +279,12 @@ func TestRepository_CreateAttempt(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		ctx := context.Background()
 
-		repo := New()
-		repo.lastAttemptID = 4
-
 		now := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
-		clock.SetTimeNowFunc(func() time.Time {
+
+		repo := New(WithTimeNow(func() time.Time {
 			return now
-		})
-		t.Cleanup(func() { clock.ResetTimeNowFunc() })
+		}))
+		repo.lastAttemptID = 4
 
 		wantAttempt := &antibrut.Attempt{
 			BucketID: 10,

@@ -9,11 +9,11 @@ import (
 	"io"
 	"strings"
 	"sync"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3" // драйвер для работы пакеты database/sql с sqlite3.
 	"github.com/pressly/goose/v3"
 	"github.com/romsar/antibrut"
-	"github.com/romsar/antibrut/clock"
 )
 
 //go:embed migrations/*.sql
@@ -22,6 +22,9 @@ var migrationsFS embed.FS
 // Repository предоставляет API для работы с хранилищем.
 type Repository struct {
 	db database
+
+	// timeNow содержит функцию, которая возвращает текущее время.
+	timeNow func() time.Time
 }
 
 // database декларирует методы для работы с БД.
@@ -33,8 +36,19 @@ type database interface {
 	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
 }
 
+// Option возвращает функцию, модифицирующую Repository.
+type Option func(r *Repository)
+
+// WithTimeNow возвращает функцию, устанавливающую
+// callback для получения текущего времени.
+func WithTimeNow(f func() time.Time) Option {
+	return func(r *Repository) {
+		r.timeNow = f
+	}
+}
+
 // New создает и открывает подключение к БД.
-func New(dsn string) (*Repository, error) {
+func New(dsn string, opts ...Option) (*Repository, error) {
 	if dsn == "" {
 		return nil, errors.New("dsn required")
 	}
@@ -56,11 +70,19 @@ func New(dsn string) (*Repository, error) {
 		return nil, fmt.Errorf("foreign keys pragma error: %w", err)
 	}
 
-	s := &Repository{
+	r := &Repository{
 		db: db,
 	}
 
-	return s, nil
+	for _, opt := range opts {
+		opt(r)
+	}
+
+	if r.timeNow == nil {
+		r.timeNow = time.Now
+	}
+
+	return r, nil
 }
 
 // Close закрывает подключение к БД.
@@ -145,7 +167,7 @@ func (r *Repository) FindBucket(
 
 // CreateBucket создает antibrut.Bucket.
 func (r *Repository) CreateBucket(ctx context.Context, bucket *antibrut.Bucket) (*antibrut.Bucket, error) {
-	bucket.CreatedAt = clock.Now()
+	bucket.CreatedAt = r.timeNow()
 
 	result, err := r.db.ExecContext(ctx, `
 		INSERT INTO buckets (limitation_code, value, created_at)
@@ -256,7 +278,7 @@ func (r *Repository) FindAttempts(ctx context.Context, filter antibrut.AttemptFi
 
 // CreateAttempt создает antibrut.Attempt.
 func (r *Repository) CreateAttempt(ctx context.Context, attempt *antibrut.Attempt) (*antibrut.Attempt, error) {
-	attempt.CreatedAt = clock.Now()
+	attempt.CreatedAt = r.timeNow()
 
 	result, err := r.db.ExecContext(ctx, `
 		INSERT INTO attempts (bucket_id, created_at)

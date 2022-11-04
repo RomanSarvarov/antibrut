@@ -1,6 +1,8 @@
 package antibrut
 
-import "github.com/romsar/antibrut/clock"
+import (
+	"time"
+)
 
 // AttemptID это идентификатор попыток запросов.
 type AttemptID int64
@@ -15,7 +17,7 @@ type Attempt struct {
 	BucketID BucketID
 
 	// CreatedAt это дата создания.
-	CreatedAt clock.Time
+	CreatedAt time.Time
 }
 
 // AttemptFilter это структура для фильтрации
@@ -26,8 +28,8 @@ type AttemptFilter struct {
 	BucketID BucketID
 
 	// CreatedAtFrom это минимальная дата создания.
-	CreatedAtFrom clock.Time
+	CreatedAtFrom time.Time
 
 	// CreatedAtTo это максимальная дата создания.
-	CreatedAtTo clock.Time
+	CreatedAtTo time.Time
 }

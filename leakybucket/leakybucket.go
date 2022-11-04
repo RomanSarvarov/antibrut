@@ -3,15 +3,10 @@ package leakybucket
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/romsar/antibrut"
-	"github.com/romsar/antibrut/clock"
 )
-
-// Service предоставляет сервис для работы с Leaky Bucket алгоритмом.
-type Service struct {
-	repo Repository
-}
 
 // Repository декларирует нужные методы для работы с БД.
 type Repository interface {
@@ -36,11 +31,40 @@ type Repository interface {
 	CreateAttempt(ctx context.Context, attempt *antibrut.Attempt) (*antibrut.Attempt, error)
 }
 
+// Service предоставляет сервис для работы с Leaky Bucket алгоритмом.
+type Service struct {
+	repo Repository
+
+	// timeNow содержит функцию, которая возвращает текущее время.
+	timeNow func() time.Time
+}
+
+// Option возвращает функцию, модифицирующую Service.
+type Option func(s *Service)
+
+// WithTimeNow возвращает функцию, устанавливающую
+// callback для получения текущего времени.
+func WithTimeNow(f func() time.Time) Option {
+	return func(s *Service) {
+		s.timeNow = f
+	}
+}
+
 // New создает Service.
-func New(repo Repository) *Service {
-	return &Service{
+func New(repo Repository, opts ...Option) *Service {
+	s := &Service{
 		repo: repo,
 	}
+
+	for _, opt := range opts {
+		opt(s)
+	}
+
+	if s.timeNow == nil {
+		s.timeNow = time.Now
+	}
+
+	return s
 }
 
 // Check проверяет "хороший" ли запрос, или его следует отклонить.
@@ -68,8 +92,8 @@ func (s *Service) Check(ctx context.Context, c antibrut.LimitationCode, val stri
 
 	attempts, err := s.repo.FindAttempts(ctx, antibrut.AttemptFilter{
 		BucketID:      bucket.ID,
-		CreatedAtFrom: clock.Now().Add(-limit.Interval.ToDuration()),
-		CreatedAtTo:   clock.Now(),
+		CreatedAtFrom: s.timeNow().Add(-limit.Interval.ToDuration()),
+		CreatedAtTo:   s.timeNow(),
 	})
 	if err != nil {
 		return err

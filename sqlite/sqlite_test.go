@@ -111,7 +111,7 @@ func TestRepository_FindBucket(t *testing.T) {
 
 		repo, db := setupRepository(t)
 
-		tm := clock.NewFromTime(time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC))
+		tm := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
 
 		wantBucket := &antibrut.Bucket{
 			LimitationCode: "foo",
@@ -147,7 +147,7 @@ func TestRepository_CreateBucket(t *testing.T) {
 
 		repo, db := setupRepository(t)
 
-		tm := clock.NewFromTime(time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC))
+		tm := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
 
 		wantBucket := &antibrut.Bucket{
 			LimitationCode: "foo",
@@ -265,7 +265,7 @@ func TestRepository_DeleteBuckets(t *testing.T) {
 		createdAtTo := time.Date(2022, 5, 1, 12, 0, 0, 0, time.UTC)
 
 		n, err := repo.DeleteBuckets(ctx, antibrut.BucketFilter{
-			CreatedAtTo: clock.NewFromTime(createdAtTo),
+			CreatedAtTo: createdAtTo,
 		})
 		require.NoError(t, err)
 		require.Equal(t, int64(1), n)
@@ -312,7 +312,7 @@ func TestRepository_FindAttempts(t *testing.T) {
 		require.Equal(t, antibrut.BucketID(5), attempts[0].BucketID)
 		require.Equal(
 			t,
-			clock.NewFromTime(time.Date(2022, 5, 1, 12, 0, 0, 0, time.UTC)),
+			time.Date(2022, 5, 1, 12, 0, 0, 0, time.UTC),
 			attempts[0].CreatedAt,
 		)
 	})
@@ -335,7 +335,7 @@ func TestRepository_FindAttempts(t *testing.T) {
 		require.NoError(t, err)
 
 		attempts, err := repo.FindAttempts(ctx, antibrut.AttemptFilter{
-			CreatedAtFrom: clock.NewFromTime(time.Date(2022, 5, 1, 13, 0, 0, 0, time.UTC)),
+			CreatedAtFrom: time.Date(2022, 5, 1, 13, 0, 0, 0, time.UTC),
 		})
 		require.NoError(t, err)
 		require.Len(t, attempts, 1)
@@ -343,7 +343,7 @@ func TestRepository_FindAttempts(t *testing.T) {
 		require.Equal(t, antibrut.BucketID(5), attempts[0].BucketID)
 		require.Equal(
 			t,
-			clock.NewFromTime(time.Date(2022, 5, 1, 13, 0, 0, 0, time.UTC)),
+			time.Date(2022, 5, 1, 13, 0, 0, 0, time.UTC),
 			attempts[0].CreatedAt,
 		)
 	})
@@ -366,7 +366,7 @@ func TestRepository_FindAttempts(t *testing.T) {
 		require.NoError(t, err)
 
 		attempts, err := repo.FindAttempts(ctx, antibrut.AttemptFilter{
-			CreatedAtTo: clock.NewFromTime(time.Date(2022, 5, 1, 12, 0, 0, 0, time.UTC)),
+			CreatedAtTo: time.Date(2022, 5, 1, 12, 0, 0, 0, time.UTC),
 		})
 		require.NoError(t, err)
 		require.Len(t, attempts, 1)
@@ -374,7 +374,7 @@ func TestRepository_FindAttempts(t *testing.T) {
 		require.Equal(t, antibrut.BucketID(5), attempts[0].BucketID)
 		require.Equal(
 			t,
-			clock.NewFromTime(time.Date(2022, 5, 1, 12, 0, 0, 0, time.UTC)),
+			time.Date(2022, 5, 1, 12, 0, 0, 0, time.UTC),
 			attempts[0].CreatedAt,
 		)
 	})
@@ -390,7 +390,7 @@ func TestRepository_CreateAttempt(t *testing.T) {
 
 		repo, db := setupRepository(t)
 
-		tm := clock.NewFromTime(time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC))
+		tm := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
 
 		wantAttempt := &antibrut.Attempt{
 			BucketID:  5,

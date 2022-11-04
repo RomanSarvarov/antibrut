@@ -1,7 +1,7 @@
 package antibrut
 
 import (
-	"github.com/romsar/antibrut/clock"
+	"time"
 )
 
 // BucketID это идентификатор бакета.
@@ -24,7 +24,7 @@ type Bucket struct {
 	Value string
 
 	// CreatedAt это дата создания.
-	CreatedAt clock.Time
+	CreatedAt time.Time
 }
 
 // BucketFilter предоставляет структуру для фильтрации бакетов.
@@ -36,7 +36,7 @@ type BucketFilter struct {
 	Value string
 
 	// CreatedAtTo это максимальная дата создания.
-	CreatedAtTo clock.Time
+	CreatedAtTo time.Time
 }
 
 // ResetFilter предоставляет структуру для сброса бакетов.

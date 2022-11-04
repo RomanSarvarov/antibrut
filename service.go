@@ -31,6 +31,9 @@ type Service struct {
 	// pruneDuration количество времени, после которого
 	// очищать неактуальные записи в хранилищах.
 	pruneDuration clock.Duration
+
+	// timeNow содержит функцию, которая возвращает текущее время.
+	timeNow func() time.Time
 }
 
 // rateLimiter содержит алгоритм для тротлинга
@@ -72,6 +75,14 @@ func WithPruneDuration(d clock.Duration) Option {
 	}
 }
 
+// WithTimeNow возвращает функцию, устанавливающую
+// callback для получения текущего времени.
+func WithTimeNow(f func() time.Time) Option {
+	return func(s *Service) {
+		s.timeNow = f
+	}
+}
+
 // NewService создает Service.
 func NewService(repo repository, rl rateLimiter, opts ...Option) *Service {
 	s := &Service{
@@ -81,6 +92,10 @@ func NewService(repo repository, rl rateLimiter, opts ...Option) *Service {
 
 	for _, opt := range opts {
 		opt(s)
+	}
+
+	if s.timeNow == nil {
+		s.timeNow = time.Now
 	}
 
 	return s
@@ -224,7 +239,7 @@ func (s *Service) work(ctx context.Context) error {
 	// Удалить неактуальные бакеты.
 	if s.pruneDuration.ToDuration() > 0 {
 		return s.rl.Reset(ctx, ResetFilter{
-			CreatedAtTo: clock.Now().Add(-s.pruneDuration.ToDuration()),
+			CreatedAtTo: s.timeNow().Add(-s.pruneDuration.ToDuration()),
 		})
 	}
 	return nil

@@ -3,9 +3,9 @@ package inmem
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/romsar/antibrut"
-	"github.com/romsar/antibrut/clock"
 )
 
 // Repository предоставляет API для работы с хранилищем.
@@ -27,14 +27,38 @@ type Repository struct {
 
 	// attempts содержит в себе попытки.
 	attempts map[antibrut.BucketID][]*antibrut.Attempt
+
+	// timeNow содержит функцию, которая возвращает текущее время.
+	timeNow func() time.Time
+}
+
+// Option возвращает функцию, модифицирующую Repository.
+type Option func(r *Repository)
+
+// WithTimeNow возвращает функцию, устанавливающую
+// callback для получения текущего времени.
+func WithTimeNow(f func() time.Time) Option {
+	return func(r *Repository) {
+		r.timeNow = f
+	}
 }
 
 // New создает репозиторий.
-func New() *Repository {
-	return &Repository{
+func New(opts ...Option) *Repository {
+	r := &Repository{
 		buckets:  make(map[antibrut.LimitationCode][]*antibrut.Bucket, 0),
 		attempts: make(map[antibrut.BucketID][]*antibrut.Attempt, 0),
 	}
+
+	for _, opt := range opts {
+		opt(r)
+	}
+
+	if r.timeNow == nil {
+		r.timeNow = time.Now
+	}
+
+	return r
 }
 
 // FindBucket находит antibrut.Bucket.
@@ -67,7 +91,7 @@ func (r *Repository) CreateBucket(_ context.Context, bucket *antibrut.Bucket) (*
 	defer r.bucketsMu.Unlock()
 
 	bucket.ID = r.lastBucketID + 1
-	bucket.CreatedAt = clock.Now()
+	bucket.CreatedAt = r.timeNow()
 
 	r.buckets[bucket.LimitationCode] = append(r.buckets[bucket.LimitationCode], bucket)
 
@@ -147,7 +171,7 @@ func (r *Repository) CreateAttempt(_ context.Context, attempt *antibrut.Attempt)
 	defer r.attemptsMu.Unlock()
 
 	attempt.ID = r.lastAttemptID + 1
-	attempt.CreatedAt = clock.Now()
+	attempt.CreatedAt = r.timeNow()
 
 	r.attempts[attempt.BucketID] = append(r.attempts[attempt.BucketID], attempt)
 

@@ -305,16 +305,16 @@ func TestSubnet_Contains(t *testing.T) {
 }
 
 func TestService_Work(t *testing.T) {
-	clock.SetTimeNowFunc(func() time.Time {
-		return time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
-	})
-	t.Cleanup(func() { clock.ResetTimeNowFunc() })
-
 	t.Run("no prune duration", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 		defer cancel()
 
-		s, _ := newFakeService(t)
+		now := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
+
+		s, _ := newFakeService(
+			t,
+			antibrut.WithTimeNow(func() time.Time { return now }),
+		)
 
 		err := s.Work(ctx)
 		require.NoError(t, err)
@@ -325,14 +325,21 @@ func TestService_Work(t *testing.T) {
 		defer cancel()
 
 		d := clock.NewDurationFromTimeDuration(1 * time.Second)
-		s, m := newFakeService(t, antibrut.WithPruneDuration(d))
+
+		now := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
+
+		s, m := newFakeService(
+			t,
+			antibrut.WithPruneDuration(d),
+			antibrut.WithTimeNow(func() time.Time { return now }),
+		)
 
 		m.rl.
 			On(
 				"Reset",
 				ctx,
 				antibrut.ResetFilter{
-					CreatedAtTo: clock.Now().Add(-d.ToDuration()),
+					CreatedAtTo: now.Add(-d.ToDuration()),
 				},
 			).
 			Return(nil).

@@ -17,11 +17,11 @@ type mocks struct {
 	r *mock.Repository
 }
 
-func newFakeService(t *testing.T) (*Service, mocks) {
+func newFakeService(t *testing.T, opts ...Option) (*Service, mocks) {
 	t.Helper()
 
 	r := mock.NewRepository(t)
-	s := New(r)
+	s := New(r, opts...)
 
 	return s, mocks{
 		r: r,
@@ -40,7 +40,7 @@ func TestService_Reset(t *testing.T) {
 		filter := antibrut.ResetFilter{
 			LimitationCode: antibrut.LimitationCode("foo"),
 			Value:          "bar",
-			CreatedAtTo:    clock.NewFromTime(dt),
+			CreatedAtTo:    dt,
 		}
 
 		s, m := newFakeService(t)
@@ -67,7 +67,7 @@ func TestService_Reset(t *testing.T) {
 		filter := antibrut.ResetFilter{
 			LimitationCode: antibrut.LimitationCode("foo"),
 			Value:          "bar",
-			CreatedAtTo:    clock.NewFromTime(dt),
+			CreatedAtTo:    dt,
 		}
 		gotErr := errors.New("some error")
 
@@ -109,13 +109,12 @@ func TestService_Check(t *testing.T) {
 	t.Run("no bucket found", func(t *testing.T) {
 		ctx := context.Background()
 
-		s, m := newFakeService(t)
-
 		now := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
-		clock.SetTimeNowFunc(func() time.Time {
-			return now
-		})
-		t.Cleanup(func() { clock.ResetTimeNowFunc() })
+
+		s, m := newFakeService(
+			t,
+			WithTimeNow(func() time.Time { return now }),
+		)
 
 		limit := &antibrut.Limitation{
 			Code:        "foo",
@@ -157,7 +156,7 @@ func TestService_Check(t *testing.T) {
 				ID:             5000,
 				LimitationCode: limit.Code,
 				Value:          "bar",
-				CreatedAt:      clock.Now().Add(-5 * time.Second),
+				CreatedAt:      now.Add(-5 * time.Second),
 			}, nil).
 			Once()
 
@@ -165,7 +164,7 @@ func TestService_Check(t *testing.T) {
 			{
 				ID:        1000,
 				BucketID:  bucket.ID,
-				CreatedAt: clock.Now().Add(-5 * time.Second),
+				CreatedAt: now.Add(-5 * time.Second),
 			},
 		}
 
@@ -175,8 +174,8 @@ func TestService_Check(t *testing.T) {
 				mockery.MatchedBy(func(_ context.Context) bool { return true }),
 				antibrut.AttemptFilter{
 					BucketID:      5000,
-					CreatedAtFrom: clock.Now().Add(-limit.Interval.ToDuration()),
-					CreatedAtTo:   clock.Now(),
+					CreatedAtFrom: now.Add(-limit.Interval.ToDuration()),
+					CreatedAtTo:   now,
 				},
 			).
 			Return(attempts, nil).
@@ -193,7 +192,7 @@ func TestService_Check(t *testing.T) {
 			Return(&antibrut.Attempt{
 				ID:        9999,
 				BucketID:  5000,
-				CreatedAt: clock.Now(),
+				CreatedAt: now,
 			}, nil).
 			Once()
 
@@ -245,13 +244,12 @@ func TestService_CheckMaxAttemptsExceeded(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
 
-			s, m := newFakeService(t)
-
 			now := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
-			clock.SetTimeNowFunc(func() time.Time {
-				return now
-			})
-			t.Cleanup(func() { clock.ResetTimeNowFunc() })
+
+			s, m := newFakeService(
+				t,
+				WithTimeNow(func() time.Time { return now }),
+			)
 
 			m.r.
 				On(
@@ -266,7 +264,7 @@ func TestService_CheckMaxAttemptsExceeded(t *testing.T) {
 				ID:             5000,
 				LimitationCode: tt.gotLimitation.Code,
 				Value:          "bar",
-				CreatedAt:      clock.Now().Add(-5 * time.Second),
+				CreatedAt:      now.Add(-5 * time.Second),
 			}
 
 			m.r.
@@ -293,8 +291,8 @@ func TestService_CheckMaxAttemptsExceeded(t *testing.T) {
 					mockery.MatchedBy(func(_ context.Context) bool { return true }),
 					antibrut.AttemptFilter{
 						BucketID:      5000,
-						CreatedAtFrom: clock.Now().Add(-tt.gotLimitation.Interval.ToDuration()),
-						CreatedAtTo:   clock.Now(),
+						CreatedAtFrom: now.Add(-tt.gotLimitation.Interval.ToDuration()),
+						CreatedAtTo:   now,
 					},
 				).
 				Return(attempts, nil).
@@ -312,7 +310,7 @@ func TestService_CheckMaxAttemptsExceeded(t *testing.T) {
 					Return(&antibrut.Attempt{
 						ID:        9999,
 						BucketID:  5000,
-						CreatedAt: clock.Now(),
+						CreatedAt: now,
 					}, nil).
 					Once()
 			}
