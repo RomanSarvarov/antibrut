@@ -34,4 +34,3 @@ jobs:
 
       - name: Build
         run: go build -tags=sqlite_unlock_notify -o ./bin/antibrut ./cmd/antibrut
-
