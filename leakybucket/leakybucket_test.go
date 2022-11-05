@@ -88,7 +88,11 @@ func TestService_Reset(t *testing.T) {
 }
 
 func TestService_Check(t *testing.T) {
+	t.Parallel()
+
 	t.Run("no limitation found", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		s, m := newFakeService(t)
@@ -107,6 +111,8 @@ func TestService_Check(t *testing.T) {
 	})
 
 	t.Run("no bucket found", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		now := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)
@@ -202,6 +208,8 @@ func TestService_Check(t *testing.T) {
 }
 
 func TestService_CheckMaxAttemptsExceeded(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name           string
 		gotLimitation  *antibrut.Limitation
@@ -242,6 +250,8 @@ func TestService_CheckMaxAttemptsExceeded(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctx := context.Background()
 
 			now := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)

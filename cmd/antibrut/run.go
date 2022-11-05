@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -85,13 +87,17 @@ func serve(cmd *cobra.Command, args []string) error {
 		cfg.RateLimiterStorageDriver,
 	)
 
-	rateLimiter := leakybucket.New(lbRepo)
+	rateLimiter := leakybucket.New(
+		lbRepo,
+		leakybucket.WithLogger(newLogger("LEAKY BUCKET")),
+	)
 
 	// service
 	service := antibrut.NewService(
 		db,
 		rateLimiter,
 		antibrut.WithPruneDuration(cfg.PruneDuration),
+		antibrut.WithLogger(newLogger("SERVICE")),
 	)
 
 	// grpc server
@@ -128,6 +134,15 @@ func serve(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+// newLogger создает механизм логирования.
+func newLogger(name string) *log.Logger {
+	if name != "" {
+		name = fmt.Sprintf("[%s] ", name)
+	}
+
+	return log.New(os.Stdout, name, log.LstdFlags)
 }
 
 // inMemLBRepository in-memory репозиторий для Leaky Bucket алгоритма.

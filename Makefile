@@ -12,6 +12,9 @@ run: init
 stop:
 	docker-compose stop
 
+restart:
+	docker-compose restart
+
 tool:
 	docker-compose exec antibrut ./antibrut $(MAKECMDGOALS)
 
@@ -40,4 +43,4 @@ integration-test:
 
 tests: supertest integration-test
 
-.PHONY: init run stop tool build generate compile lint go-lint proto-lint test supertest integration-test tests testshort
+.PHONY: init run stop restart tool build generate compile lint go-lint proto-lint test supertest integration-test tests testshort

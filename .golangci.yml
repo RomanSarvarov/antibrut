@@ -1,5 +1,10 @@
 run:
   tests: true
+  skip-dirs:
+    - .github
+    - mock
+    - data
+    - bin
 
 linters-settings:
   funlen:

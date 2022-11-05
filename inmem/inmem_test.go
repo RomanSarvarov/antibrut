@@ -71,7 +71,11 @@ func TestRepository_FindBucket(t *testing.T) {
 }
 
 func TestRepository_CreateBucket(t *testing.T) {
+	t.Parallel()
+
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo := New(WithTimeNow(func() time.Time {
@@ -276,7 +280,11 @@ func TestRepository_FindAttempts(t *testing.T) {
 }
 
 func TestRepository_CreateAttempt(t *testing.T) {
+	t.Parallel()
+
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		now := time.Date(2022, 1, 1, 1, 1, 1, 1, time.UTC)

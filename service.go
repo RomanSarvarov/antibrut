@@ -3,6 +3,8 @@ package antibrut
 import (
 	"context"
 	"errors"
+	"io"
+	"log"
 	"net"
 	"time"
 
@@ -34,6 +36,15 @@ type Service struct {
 
 	// timeNow содержит функцию, которая возвращает текущее время.
 	timeNow func() time.Time
+
+	// logger механизм логирования.
+	logger logger
+}
+
+// logger это контракт для механизма логирования.
+type logger interface {
+	// Printf сохраняет отформатированное сообщение в лог.
+	Printf(format string, v ...any)
 }
 
 // rateLimiter содержит алгоритм для тротлинга
@@ -83,6 +94,14 @@ func WithTimeNow(f func() time.Time) Option {
 	}
 }
 
+// WithLogger возвращает функцию,
+// устанавливающую механизм логирования.
+func WithLogger(l logger) Option {
+	return func(s *Service) {
+		s.logger = l
+	}
+}
+
 // NewService создает Service.
 func NewService(repo repository, rl rateLimiter, opts ...Option) *Service {
 	s := &Service{
@@ -96,6 +115,10 @@ func NewService(repo repository, rl rateLimiter, opts ...Option) *Service {
 
 	if s.timeNow == nil {
 		s.timeNow = time.Now
+	}
+
+	if s.logger == nil {
+		s.logger = log.New(io.Discard, "", 0)
 	}
 
 	return s
@@ -113,9 +136,11 @@ func (s *Service) Check(ctx context.Context, login Login, pass Password, ip IP) 
 		return err
 	}
 	if inWl {
+		s.logger.Printf("IP %s in the white list. Allow.\n")
 		return nil
 	}
 	if inBl {
+		s.logger.Printf("IP %s in the black list. Deny.\n")
 		return ErrIPInBlackList
 	}
 
@@ -186,11 +211,15 @@ func (s *Service) Reset(ctx context.Context, login Login, ip IP) error {
 
 // AddIPToWhiteList добавляет IP адрес в белый список.
 func (s *Service) AddIPToWhiteList(ctx context.Context, subnet Subnet) error {
+	s.logger.Printf("Adding subnet `%s` to white list.\n", subnet)
+
 	return s.createOrUpdateIPRule(ctx, WhiteList, subnet)
 }
 
 // DeleteIPFromWhiteList удаляет IP адрес из белого списка.
 func (s *Service) DeleteIPFromWhiteList(ctx context.Context, subnet Subnet) error {
+	s.logger.Printf("Deleting subnet `%s` from white list.\n", subnet)
+
 	_, err := s.repo.DeleteIPRules(ctx, IPRuleFilter{
 		Type:   WhiteList,
 		Subnet: subnet,
@@ -200,11 +229,15 @@ func (s *Service) DeleteIPFromWhiteList(ctx context.Context, subnet Subnet) erro
 
 // AddIPToBlackList добавляет IP адрес в чёрный список.
 func (s *Service) AddIPToBlackList(ctx context.Context, subnet Subnet) error {
+	s.logger.Printf("Adding subnet `%s` to black list.\n", subnet)
+
 	return s.createOrUpdateIPRule(ctx, BlackList, subnet)
 }
 
 // DeleteIPFromBlackList удаляет IP адрес из чёрного списка.
 func (s *Service) DeleteIPFromBlackList(ctx context.Context, subnet Subnet) error {
+	s.logger.Printf("Deleting subnet `%s` from white list.\n", subnet)
+
 	_, err := s.repo.DeleteIPRules(ctx, IPRuleFilter{
 		Type:   BlackList,
 		Subnet: subnet,
@@ -217,6 +250,8 @@ func (s *Service) DeleteIPFromBlackList(ctx context.Context, subnet Subnet) erro
 func (s *Service) Work(ctx context.Context) error {
 	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
+
+	s.logger.Printf("Starting worker.\n")
 
 	if err := s.work(ctx); err != nil {
 		return err
@@ -236,6 +271,8 @@ func (s *Service) Work(ctx context.Context) error {
 
 // work выполняет полезную работу, которую запускает Work.
 func (s *Service) work(ctx context.Context) error {
+	s.logger.Printf("Worker tick.\n")
+
 	// Удалить неактуальные бакеты.
 	if s.pruneDuration.ToDuration() > 0 {
 		return s.rl.Reset(ctx, ResetFilter{

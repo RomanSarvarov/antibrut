@@ -239,6 +239,8 @@ func TestService_DeleteIPFromBlackList(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 		subnet := antibrut.Subnet("192.168.5.0/26")
 
@@ -305,7 +307,11 @@ func TestSubnet_Contains(t *testing.T) {
 }
 
 func TestService_Work(t *testing.T) {
+	t.Parallel()
+
 	t.Run("no prune duration", func(t *testing.T) {
+		t.Parallel()
+
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 		defer cancel()
 
@@ -321,6 +327,8 @@ func TestService_Work(t *testing.T) {
 	})
 
 	t.Run("with prune duration", func(t *testing.T) {
+		t.Parallel()
+
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 		defer cancel()
 

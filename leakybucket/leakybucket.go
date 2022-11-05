@@ -3,6 +3,8 @@ package leakybucket
 import (
 	"context"
 	"errors"
+	"io"
+	"log"
 	"time"
 
 	"github.com/romsar/antibrut"
@@ -37,6 +39,15 @@ type Service struct {
 
 	// timeNow содержит функцию, которая возвращает текущее время.
 	timeNow func() time.Time
+
+	// logger механизм логирования.
+	logger logger
+}
+
+// logger это контракт для механизма логирования.
+type logger interface {
+	// Printf сохраняет отформатированное сообщение в лог.
+	Printf(format string, v ...any)
 }
 
 // Option возвращает функцию, модифицирующую Service.
@@ -47,6 +58,14 @@ type Option func(s *Service)
 func WithTimeNow(f func() time.Time) Option {
 	return func(s *Service) {
 		s.timeNow = f
+	}
+}
+
+// WithLogger возвращает функцию,
+// устанавливающую механизм логирования.
+func WithLogger(l logger) Option {
+	return func(s *Service) {
+		s.logger = l
 	}
 }
 
@@ -62,6 +81,10 @@ func New(repo Repository, opts ...Option) *Service {
 
 	if s.timeNow == nil {
 		s.timeNow = time.Now
+	}
+
+	if s.logger == nil {
+		s.logger = log.New(io.Discard, "", 0)
 	}
 
 	return s
@@ -100,18 +123,34 @@ func (s *Service) Check(ctx context.Context, c antibrut.LimitationCode, val stri
 	}
 
 	if len(attempts) >= limit.MaxAttempts {
+		s.logger.Printf(
+			"Request was blocked [Value: %s] [Limitation: %s] [Attempts: %d] [Max-attempts: %d].\n",
+			val,
+			c,
+			len(attempts),
+			limit.MaxAttempts,
+		)
+
 		return antibrut.ErrMaxAttemptsExceeded
 	}
 
 	_, err = s.repo.CreateAttempt(ctx, &antibrut.Attempt{
 		BucketID: bucket.ID,
 	})
+	if err != nil {
+		return err
+	}
+
+	s.logger.Printf("Request was allowed [Value: %s] [Limitation: %s].\n", val, c)
 
 	return err
 }
 
 // Reset сбрасывает бакеты по определенным признакам.
 func (s *Service) Reset(ctx context.Context, filter antibrut.ResetFilter) error {
+	s.logger.Printf("Deleting buckets [Filter: %v].\n", filter)
+
 	_, err := s.repo.DeleteBuckets(ctx, filter)
+
 	return err
 }

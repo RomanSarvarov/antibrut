@@ -76,9 +76,9 @@ func (r *Repository) FindBucket(
 		return nil, antibrut.ErrNotFound
 	}
 
-	for _, b := range buckets {
-		if b.Value == val {
-			return b, nil
+	for _, bucket := range buckets {
+		if bucket.Value == val {
+			return bucket, nil
 		}
 	}
 
@@ -94,7 +94,6 @@ func (r *Repository) CreateBucket(_ context.Context, bucket *antibrut.Bucket) (*
 	bucket.CreatedAt = r.timeNow()
 
 	r.buckets[bucket.LimitationCode] = append(r.buckets[bucket.LimitationCode], bucket)
-
 	r.lastBucketID = bucket.ID
 
 	return bucket, nil
@@ -174,7 +173,6 @@ func (r *Repository) CreateAttempt(_ context.Context, attempt *antibrut.Attempt)
 	attempt.CreatedAt = r.timeNow()
 
 	r.attempts[attempt.BucketID] = append(r.attempts[attempt.BucketID], attempt)
-
 	r.lastAttemptID = attempt.ID
 
 	return attempt, nil

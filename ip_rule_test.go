@@ -7,6 +7,8 @@ import (
 )
 
 func TestIPRule_IsWhiteList(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		t    IPRuleType
@@ -25,6 +27,8 @@ func TestIPRule_IsWhiteList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			rule := IPRule{
 				Type: tt.t,
 			}
@@ -34,6 +38,8 @@ func TestIPRule_IsWhiteList(t *testing.T) {
 }
 
 func TestIPRule_IsBlackList(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		t    IPRuleType
@@ -52,6 +58,8 @@ func TestIPRule_IsBlackList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			rule := IPRule{
 				Type: tt.t,
 			}

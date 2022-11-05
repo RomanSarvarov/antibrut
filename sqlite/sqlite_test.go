@@ -612,6 +612,8 @@ func TestRepository_DeleteIPRules(t *testing.T) {
 	})
 
 	t.Run("delete by subnet", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := context.Background()
 
 		repo, db := setupRepository(t)
