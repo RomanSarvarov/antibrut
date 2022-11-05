@@ -29,7 +29,7 @@ jobs:
       - name: Unit tests
         run: go test -race -count 100 ./...
 
-      - name: Integration & E2E tests
+      - name: Integration & End-to-end tests
         run: go test -tags integration -race -count 1 ./...
 
       - name: Build

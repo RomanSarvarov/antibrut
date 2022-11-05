@@ -7,11 +7,12 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/romsar/antibrut"
 	"github.com/romsar/antibrut/config"
-	localgrpc "github.com/romsar/antibrut/grpc"
+	grpcserver "github.com/romsar/antibrut/grpc"
 	"github.com/romsar/antibrut/inmem"
 	"github.com/romsar/antibrut/leakybucket"
 	"github.com/romsar/antibrut/sqlite"
@@ -89,7 +90,7 @@ func serve(cmd *cobra.Command, args []string) error {
 
 	rateLimiter := leakybucket.New(
 		lbRepo,
-		leakybucket.WithLogger(newLogger("LEAKY BUCKET")),
+		leakybucket.WithLogger(newLogger("Leaky Bucket")),
 	)
 
 	// service
@@ -97,11 +98,14 @@ func serve(cmd *cobra.Command, args []string) error {
 		db,
 		rateLimiter,
 		antibrut.WithPruneDuration(cfg.PruneDuration),
-		antibrut.WithLogger(newLogger("SERVICE")),
+		antibrut.WithLogger(newLogger("Service")),
 	)
 
 	// grpc server
-	server := localgrpc.NewServer(service)
+	server := grpcserver.NewServer(
+		service,
+		grpcserver.WithLogger(newLogger("GRPC server")),
+	)
 
 	errGrp.Go(func() error {
 		defer cancel()
@@ -139,7 +143,7 @@ func serve(cmd *cobra.Command, args []string) error {
 // newLogger создает механизм логирования.
 func newLogger(name string) *log.Logger {
 	if name != "" {
-		name = fmt.Sprintf("[%s] ", name)
+		name = strings.ToUpper(fmt.Sprintf("[%s] ", name))
 	}
 
 	return log.New(os.Stdout, name, log.LstdFlags)
