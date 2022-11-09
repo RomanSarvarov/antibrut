@@ -47,7 +47,7 @@ var (
 
 	blackListAddIPCmd = &cobra.Command{
 		Use:   "add",
-		Short: "Добавить подсеть в черным список.",
+		Short: "Добавить подсеть в черный список.",
 		RunE:  addIPToBlackList,
 	}
 
