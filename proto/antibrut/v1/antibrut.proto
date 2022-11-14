@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package antibrut.v1;
+
+option go_package = "./;proto";
+
+service AntiBrutService {
+  rpc Check(CheckRequest) returns (CheckResponse);
+  rpc Reset(ResetRequest) returns (google.protobuf.Empty);
+
+  rpc AddIPToWhiteList(AddIPToWhiteListRequest) returns (google.protobuf.Empty);
+  rpc DeleteIPFromWhiteList(DeleteIPFromWhiteListRequest) returns (google.protobuf.Empty);
+
+  rpc AddIPToBlackList(AddIPToBlackListRequest) returns (google.protobuf.Empty);
+  rpc DeleteIPFromBlackList(DeleteIPFromBlackListRequest) returns (google.protobuf.Empty);
+}
+
+message CheckRequest {
+  string login = 1;
+  string password = 2;
+  string ip = 3;
+}
+
+message CheckResponse {
+  bool ok = 1;
+}
+
+message ResetRequest {
+  string login = 1;
+  string ip = 2;
+}
+
+message AddIPToWhiteListRequest {
+  string subnet = 1;
+}
+
+message DeleteIPFromWhiteListRequest {
+  string subnet = 1;
+}
+
+message AddIPToBlackListRequest {
+  string subnet = 1;
+}
+
+message DeleteIPFromBlackListRequest {
+  string subnet = 1;
+}
